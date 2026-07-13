@@ -487,29 +487,33 @@
                 const rows = results.data;
                 const batch = writeBatch(db);
                 rows.forEach((row) => {
-                    const firstName = row["שם פרטי"] || "";
-                    const lastName = row["שם משפחה"] || "";
+                    const firstName = row["שם פרטי"] || row[" שם פרטי "] || "";
+                    const lastName = row["שם משפחה"] || row[" שם משפחה "] || "";
                     const fullName = (firstName + " " + lastName).trim();
                     if (fullName) {
-                        const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
-                        const masad = row["מסד"] || "";
+                        const managerName = (row["אחראי"] || row[" אחראי "] || "מטה מרכזי").trim();
+                        const masad = row["מסד"] || row[" מסד "] || "";
                         
-                        // קורא את הכתובת בצורה גמישה וחכמה במיוחד!
-                        let address = "";
-                        
-                        // בודק אם "כתובת" היא עמודה עצמאית שמכילה טקסט ולא רק מספר בית בודד
-                        if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
-                            address = row["כתובת"].trim();
-                        } else {
-                            // אם אין, או שזה רק מספר, מחבר רחוב + מס בית (הקודם או החדש שנקרא "כתובת") + עיר
-                            const street = row["רחוב"] || "";
-                            const houseNum = row["מס בית"] || row["כתובת"] || "";
-                            const city = row["עיר"] || "";
-                            address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
-                            if (address === ",") address = ""; // מניעת פסיק ריק אם הכל ריק
-                        }
+                        // קריאת רחוב, עיר ומספר בית תוך תמיכה מלאה ברווחים נסתרים בשמות העמודות
+                        const street = (row["רחוב"] || row[" רחוב "] || "").trim();
+                        const city = (row["עיר"] || row[" עיר "] || "").trim();
+                        const houseNum = (row["כתובת"] || row[" כתובת "] || row["מס בית"] || row[" מס בית "] || "").trim();
 
-                        const phone = row["טלפון"] || row["נייד"] || "";
+                        // בניית הכתובת בצורה מדויקת ונקייה
+                        let address = "";
+                        if (street) {
+                            address = street;
+                            if (houseNum) address += " " + houseNum;
+                            if (city) address += ", " + city;
+                        } else if (houseNum) {
+                            address = houseNum;
+                            if (city) address += ", " + city;
+                        } else if (city) {
+                            address = city;
+                        }
+                        address = address.replace(/\s+/g, " ").trim();
+
+                        const phone = row["טלפון"] || row[" טלפון "] || row["נייד"] || row[" נייד "] || "";
 
                         const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
                         batch.set(doc(db, "voters", voterId), {
@@ -526,7 +530,7 @@
                     }
                 });
                 await batch.commit();
-                alert("הקובץ נטען בהצלחה!");
+                alert("הקובץ נטען בהצלחה! הכתובות עודכנו וישוקפו מיד על המסך.");
             }
         });
     });
