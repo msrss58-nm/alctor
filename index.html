@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -87,8 +87,11 @@
         .btn-call { background-color: #00a400; color: white; }
         .btn-voted { background-color: #1877f2; color: white; }
         .btn-unvoted { background-color: #e4e6eb; color: #4b4f56; }
-        .btn-drive { background-color: #ff9800; color: white; }
+        .btn-drive { background-color: #2196F3; color: white; }
         .btn-remind { background-color: #f59f00; color: white; }
+        .btn-cancel-remind { background-color: #f02849; color: white; }
+        .btn-save-all { background-color: #2e7d32; color: white; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-save-all:hover { background-color: #1b5e20; }
         
         .modal-label { font-weight: bold; font-size: 13px; color: #65676b; margin-bottom: 5px; display: block; }
         .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccd0d5; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
@@ -251,7 +254,6 @@
         
         <div class="voter-info-block">
             📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span><br>
-            🆔 <strong>מספר מסד:</strong> <span id="modal-voter-masad">-</span><br>
             📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span><br>
             👤 <strong>אחראי:</strong> <span id="modal-voter-manager">-</span>
         </div>
@@ -262,20 +264,34 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ תזכורת (חזור אליו)</button>
-            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
+            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ הגדר תזכורת</button>
+            <button class="modal-btn btn-cancel-remind" id="modal-btn-cancel-remind">❌ מחק תזכורת</button>
+            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 הסעות</button>
         </div>
 
-        <span class="modal-label">✏️ הערות ועדכוני סטטוס (נשמר אוטומטית):</span>
-        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה, צריך לברר לגבי המשפחה..."></textarea>
+        <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
+        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
         
-        <div id="modal-save-status" style="font-size: 12px; color: #00a400; text-align: left; font-weight: bold; margin-top: -10px; height: 15px;"></div>
+        <!-- כפתור שמירה ייעודי ויציב למניעת כפילויות ודריסות -->
+        <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
+        
+        <div id="modal-save-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { 
+        getFirestore, 
+        collection, 
+        doc, 
+        onSnapshot, 
+        writeBatch, 
+        updateDoc, 
+        getDocs, 
+        setDoc, 
+        enableIndexedDbPersistence 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -289,6 +305,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // תמיכה במצב לא מקוון (Offline Persistence)
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.warn("מצב אופליין נכשל - כרטיסיות מרובות פתוחות");
+        } else if (err.code == 'unimplemented') {
+            console.warn("מצב אופליין לא נתמך בדפדפן זה");
+        }
+    });
+
     const USERS_DB = {
         "1111": { name: "מנהל", role: "admin" },
         "2222": { name: "אבי", role: "user" },
@@ -300,7 +325,9 @@
     let showUnvotedOnly = false;
     let targetTime = "22:00";
     let countdownInterval = null;
-    let activeVoter = null; // הבוחר שפתוח כרגע בחלון
+    let activeVoter = null; 
+    let tempReminderTime = null; // החזקת ערך תזכורת זמני עד לשמירה הסופית
+    let unsubscribeVoters = null; // להפסקת האזנה במקרה הצורך
 
     let pieChartInstance = null;
     let barChartInstance = null;
@@ -342,8 +369,8 @@
             startCountdown();
         });
 
-        // האזנה קבועה לבוחרים
-        onSnapshot(collection(db, "voters"), (snapshot) => {
+        // האזנה מאובטחת לבוחרים - מתחילה רק לאחר התחברות מאומתת
+        unsubscribeVoters = onSnapshot(collection(db, "voters"), (snapshot) => {
             const voters = [];
             snapshot.forEach(doc => {
                 voters.push({ id: doc.id, ...doc.data() });
@@ -354,17 +381,16 @@
             }
             renderDashboard();
 
-            // אם יש חלון פתוח, נעדכן את הנתונים שלו ברקע (למעט שדה ההערות שבו המשתמש מקליד!)
+            // עדכון הבוחר הפעיל ברקע
             if (activeVoter) {
                 const updated = voters.find(v => v.id === activeVoter.id);
                 if (updated) {
-                    activeVoter = updated;
-                    refreshModalData();
+                    activeVoter.hasVoted = updated.hasVoted;
+                    refreshModalVoteButton();
                 }
             }
         });
 
-        // בדיקה קבועה בכל דקה עבור תזכורות שפג תוקפן
         setInterval(checkActiveReminders, 30000);
     }
 
@@ -432,7 +458,6 @@
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    // שליחת דוח לוואטסאפ עם שעת שליחה באותה שורה
     document.getElementById("whatsapp-report-btn").addEventListener("click", () => {
         if (sessionUser.role !== "admin") return;
         const totalVoters = allVotersGlobal.length;
@@ -466,9 +491,22 @@
         if (!confirm("האם למחוק את כל נתוני הבוחרים לצמיתות?")) return;
         try {
             const querySnapshot = await getDocs(collection(db, "voters"));
-            const batch = writeBatch(db);
-            querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
-            await batch.commit();
+            
+            // מחיקה ב-Batches תומכי כמות גדולה
+            let batch = writeBatch(db);
+            let count = 0;
+            for (const doc of querySnapshot.docs) {
+                batch.delete(doc.ref);
+                count++;
+                if (count === 400) {
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    count = 0;
+                }
+            }
+            if (count > 0) {
+                await batch.commit();
+            }
             alert("כל נתוני הבוחרים נמחקו.");
         } catch (error) { alert("שגיאה במחיקה!"); }
     });
@@ -476,46 +514,91 @@
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (!file || sessionUser.role !== "admin") return;
+        
+        const statusSpan = document.getElementById("upload-status");
+        statusSpan.style.color = "#1877f2";
+        statusSpan.textContent = "מנתח קובץ...";
+
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             complete: async function(results) {
                 const rows = results.data;
-                const batch = writeBatch(db);
-                rows.forEach((row) => {
-                    const firstName = row["שם פרטי"] || "";
-                    const lastName = row["שם משפחה"] || "";
-                    const fullName = (firstName + " " + lastName).trim();
-                    if (fullName) {
-                        const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
-                        const masad = row["מסד"] || "";
-                        const street = row["רחוב"] || "";
-                        const houseNum = row["מס בית"] || "";
-                        const city = row["עיר"] || "";
-                        const address = `${street} ${houseNum}, ${city}`.trim();
-                        const phone = row["טלפון"] || row["נייד"] || "";
+                statusSpan.textContent = `טוען ${rows.length} בוחרים... אנא המתן`;
+                
+                try {
+                    let batch = writeBatch(db);
+                    let count = 0;
+                    let totalSaved = 0;
 
-                        const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
-                        batch.set(doc(db, "voters", voterId), {
-                            masad: masad,
-                            name: fullName,
-                            address: address,
-                            manager: managerName,
-                            phone: phone.trim(),
-                            secretPasscode: sessionUser.token,
-                            notes: "",
-                            hasVoted: false,
-                            reminderTime: null
-                        }, { merge: true });
+                    for (const row of rows) {
+                        const firstName = row["שם פרטי"] || "";
+                        const lastName = row["שם משפחה"] || "";
+                        const fullName = (firstName + " " + lastName).trim();
+                        
+                        if (fullName) {
+                            const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
+                            const masad = row["מסד"] || "";
+                            
+                            // קריאת כתובת מלאה ושילוב חכם מ-3 השדות: רחוב, מס בית, עיר
+                            let address = "";
+                            if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
+                                address = row["כתובת"].trim();
+                            } else {
+                                const street = row["רחוב"] ? row["רחוב"].trim() : "";
+                                const houseNum = row["מס בית"] || row["כתובת"] || "";
+                                const city = row["עיר"] ? row["עיר"].trim() : "";
+                                
+                                // חיבור שלושת השדות
+                                address = `${street} ${houseNum} ${city}`.replace(/\s+/g, " ").trim();
+                            }
+
+                            const phone = row["טלפון"] || row["נייד"] || "";
+                            const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
+                            
+                            batch.set(doc(db, "voters", voterId), {
+                                masad: masad,
+                                name: fullName,
+                                address: address,
+                                manager: managerName,
+                                phone: phone.trim(),
+                                secretPasscode: sessionUser.token,
+                                notes: "",
+                                hasVoted: false,
+                                reminderTime: null
+                            }, { merge: true });
+
+                            count++;
+                            totalSaved++;
+
+                            // מניעת קריסה ב-Firebase: פיצול ל-Chunks של 450 רשומות
+                            if (count === 450) {
+                                await batch.commit();
+                                batch = writeBatch(db);
+                                count = 0;
+                                statusSpan.textContent = `נטענו ${totalSaved} מתוך ${rows.length}...`;
+                            }
+                        }
                     }
-                });
-                await batch.commit();
-                alert("הקובץ נטען בהצלחה!");
+
+                    // שמירת הרשומות הנותרות
+                    if (count > 0) {
+                        await batch.commit();
+                    }
+
+                    statusSpan.style.color = "#00a400";
+                    statusSpan.textContent = "נטען בהצלחה!";
+                    alert(`טעינת הקובץ הושלמה! ${totalSaved} בוחרים עודכנו במערכת.`);
+                } catch (err) {
+                    console.error(err);
+                    statusSpan.style.color = "red";
+                    statusSpan.textContent = "שגיאה בטעינה";
+                    alert("שגיאה במהלך העלאת הנתונים ל-Firebase. נסה שנית.");
+                }
             }
         });
     });
 
-    // פונקציית רינדור דשבורד
     function renderDashboard() {
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
@@ -580,7 +663,7 @@
             row.classList.add("voter-row-item");
             if (v.hasVoted) row.classList.add("voted-row");
             
-            // סימון שורה עם תזכורת פעילה
+            // צביעה בצהוב ברמת השורה
             if (v.reminderTime && !v.hasVoted) {
                 row.classList.add("reminder-row");
             }
@@ -600,7 +683,6 @@
                 <td>${statusBadge}</td>
             `;
 
-            // לחיצה על השורה פותחת את החלון החכם
             row.addEventListener("click", () => openVoterModal(v));
             votersBody.appendChild(row);
         });
@@ -611,33 +693,24 @@
     
     function openVoterModal(voter) {
         activeVoter = voter;
+        tempReminderTime = voter.reminderTime || null; // החזקת המצב הקיים מ-Firebase
+        
         modal.style.display = "flex";
         
-        // מילוי הנתונים
         document.getElementById("modal-voter-name").textContent = voter.name;
         document.getElementById("modal-voter-address").textContent = voter.address || '-';
-        document.getElementById("modal-voter-masad").textContent = voter.masad || '-';
         document.getElementById("modal-voter-phone").textContent = voter.phone || '-';
         document.getElementById("modal-voter-manager").textContent = voter.manager || 'מטה מרכזי';
         
-        // מילוי שדה הערות בפעם הראשונה
         const notesInput = document.getElementById("modal-notes-input");
         notesInput.value = voter.notes || '';
+        
         document.getElementById("modal-save-status").textContent = "";
 
-        // ניתוק מאזינים קודמים ומניעת כפילויות
-        notesInput.oninput = null;
-        
-        // שמירה אוטומטית רק בהקלדה ללא דריסה של כל הטבלה
-        notesInput.oninput = (e) => {
-            debouncedSaveNotes(activeVoter.id, e.target.value);
-        };
-
-        refreshModalData();
+        refreshModalVoteButton();
     }
 
-    // עדכון דינמי של כפתורי המצב בחלון (משתנה ברקע אם מישהו אחר לוחץ)
-    function refreshModalData() {
+    function refreshModalVoteButton() {
         const toggleVoteBtn = document.getElementById("modal-btn-toggle-vote");
         if (activeVoter.hasVoted) {
             toggleVoteBtn.textContent = "↩️ בטל סימון הצבעה";
@@ -648,69 +721,104 @@
         }
     }
 
-    // סגירת מודאל
     document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
     window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
 
-    // כפתור חיוג מהיר מהחלון
+    // כפתור חיוג מהיר
     document.getElementById("modal-btn-call").addEventListener("click", () => {
         if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
     });
 
-    // כפתור שינוי סטטוס הצבעה מהחלון
+    // שינוי סטטוס הצבעה מיידי
     document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
         if (!activeVoter) return;
         const nextStatus = !activeVoter.hasVoted;
         await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
-    // מנגנון שמירה עם השהיה (Debounce) כדי לא להעמיס על השרת בכל אות
-    let saveTimeout = null;
-    function debouncedSaveNotes(voterId, text) {
-        document.getElementById("modal-save-status").textContent = "📝 מקליד...";
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(async () => {
-            await updateDoc(doc(db, "voters", voterId), { notes: text });
-            document.getElementById("modal-save-status").textContent = "💾 נשמר בהצלחה!";
-        }, 800);
-    }
-
-    // כפתור תזכורת לחזור אליו עוד שעה
-    document.getElementById("modal-btn-remind").addEventListener("click", async () => {
+    // כפתור תזכורת
+    document.getElementById("modal-btn-remind").addEventListener("click", () => {
         if (!activeVoter) return;
+        
         const now = new Date();
-        // קביעת זמן היעד לעוד שעה מהרגע
-        const reminderTimestamp = now.getTime() + (60 * 60 * 1000); 
+        const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
+        const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
         
-        await updateDoc(doc(db, "voters", activeVoter.id), { 
-            reminderTime: reminderTimestamp,
-            notes: (activeVoter.notes ? activeVoter.notes + " | " : "") + "הגדיר תזכורת לחזור אליו"
-        });
+        tempReminderTime = futureTime.getTime(); // שומר את ה-Timestamp בזיכרון הזמני
+
+        const notesInput = document.getElementById("modal-notes-input");
+        let currentText = notesInput.value.trim();
+        const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
         
-        alert(`הוגדרה תזכורת עבור ${activeVoter.name}. השורה תיצבע בצהוב ותקפוץ התראה בעוד שעה!`);
-        modal.style.display = "none";
+        if (currentText && !currentText.includes("תזכורת:")) {
+            notesInput.value = currentText + "\n" + reminderText;
+        } else if (!currentText.includes("תזכורת:")) {
+            notesInput.value = reminderText;
+        }
+        
+        document.getElementById("modal-save-status").style.color = "#f59f00";
+        document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
     });
 
-    // כפתור הזמנת הסעה - פותח חלון וואטסאפ מהיר לאחראי הסעות
-    document.getElementById("modal-btn-drive") .addEventListener("click", () => {
+    // מחיקת תזכורת - פותר את בעיית השורה הצבועה ומנקה את המצב חזרה למצב רגיל
+    document.getElementById("modal-btn-cancel-remind").addEventListener("click", () => {
         if (!activeVoter) return;
         
-        const driverName = prompt("הזן את שם נהג או אחראי ההסעות (או לחץ אישור לשליחה כללית):", "אחראי הסעות");
-        if (driverName === null) return; // ביטול
-
-        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד/קלפי:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
+        tempReminderTime = null; // מנקה את התזכורת בזיכרון הזמני
         
+        const notesInput = document.getElementById("modal-notes-input");
+        let currentText = notesInput.value;
+        
+        // הסרת שורת התזכורת משדה ההערות (במידה וקיימת)
+        notesInput.value = currentText.split('\n').filter(line => !line.includes("תזכורת:")).join('\n').trim();
+        
+        document.getElementById("modal-save-status").style.color = "#f02849";
+        document.getElementById("modal-save-status").textContent = "התזכורת בוטלה. לחץ על 'שמור שינויים' לאישור סופי.";
+    });
+
+    // כפתור שמירה ייעודי לשמירה סופית של כל השינויים
+    document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
+        if (!activeVoter) return;
+        
+        const saveStatus = document.getElementById("modal-save-status");
+        saveStatus.style.color = "#2e7d32";
+        saveStatus.textContent = "💾 שומר נתונים בשרת...";
+
+        const notesInput = document.getElementById("modal-notes-input");
+        
+        try {
+            await updateDoc(doc(db, "voters", activeVoter.id), {
+                notes: notesInput.value,
+                reminderTime: tempReminderTime
+            });
+            
+            saveStatus.textContent = "✅ השינויים נשמרו בהצלחה!";
+            
+            setTimeout(() => {
+                modal.style.display = "none";
+                activeVoter = null;
+            }, 1000);
+            
+        } catch (error) {
+            console.error("Error saving voter:", error);
+            saveStatus.style.color = "red";
+            saveStatus.textContent = "❌ שגיאה בשמירת הנתונים!";
+        }
+    });
+
+    // שליחה לאחראי הסעות בוואטסאפ
+    document.getElementById("modal-btn-drive").addEventListener("click", () => {
+        if (!activeVoter) return;
+        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
     });
 
-    // בדיקת התראות שפג תוקפן בשביל להקפיץ הודעה על המסך
+    // בדיקת תזכורות שפג תוקפן
     function checkActiveReminders() {
         const currentTime = new Date().getTime();
         allVotersGlobal.forEach(async v => {
             if (v.reminderTime && currentTime >= v.reminderTime && !v.hasVoted) {
-                // הקפצת התראה למסך
                 alert(`⏰ תזכורת חמ"ל: הגיע הזמן לחזור אל ${v.name} (טלפון: ${v.phone})!`);
-                // איפוס התזכורת ב-DB כדי שלא תקפוץ שוב בלופ
                 await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
             }
         });
