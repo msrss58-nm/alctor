@@ -239,7 +239,7 @@
         });
     }
 
-    // קריאת CSV עם מנגנון מובנה המונע חריגה ממגבלת 500 השורות של Firebase
+    // קריאת CSV מורחבת לתמיכה מלאה בכל חלקי הכתובת המורכבת (רחוב, מס בית, דירה/כניסה, עיר)
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -267,10 +267,34 @@
                         if (fullName) {
                             const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                             const masad = row["מסד"] || "";
-                            const street = row["רחוב"] || "";
-                            const houseNum = row["מס בית"] || "";
-                            const city = row["עיר"] || "";
-                            const address = `${street} ${houseNum}, ${city}`.trim();
+                            
+                            // 1. חילוץ הרחוב
+                            const street = row["רחוב"] || row["שם רחוב"] || "";
+                            
+                            // 2. חילוץ מספר בית
+                            const houseNum = row["מס בית"] || row["מס' בית"] || row["מספר בית"] || row["בית"] || "";
+                            
+                            // 3. חילוץ דירה / כניסה / קומה (התוספת להשלמת 3 העמודות המלאות)
+                            const apartment = row["דירה"] || row["מס' דירה"] || row["מספר דירה"] || row["כניסה"] || row["קומה"] || "";
+                            
+                            // 4. חילוץ עיר
+                            const city = row["עיר"] || row["ישוב"] || "";
+                            
+                            // בונים את הכתובת בצורה דינמית ומנקים רווחים כפולים או פסיקים מיותרים
+                            let addressParts = [];
+                            if (street.trim()) addressParts.push(street.trim());
+                            if (houseNum.trim()) addressParts.push(houseNum.trim());
+                            if (apartment.trim()) addressParts.push(`דירה/כניסה ${apartment.trim()}`);
+                            
+                            let streetAndHouse = addressParts.join(" ");
+                            let finalAddress = "";
+                            
+                            if (streetAndHouse && city.trim()) {
+                                finalAddress = `${streetAndHouse}, ${city.trim()}`;
+                            } else {
+                                finalAddress = streetAndHouse || city.trim() || "";
+                            }
+
                             const phone = row["טלפון"] || row["נייד"] || "";
 
                             const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
@@ -279,7 +303,7 @@
                             currentBatch.set(voterRef, {
                                 masad: masad,
                                 name: fullName,
-                                address: address,
+                                address: finalAddress,
                                 manager: managerName,
                                 phone: phone.trim()
                             }, { merge: true });
@@ -287,7 +311,6 @@
                             operationCount++;
                             uploadedCount++;
 
-                            // אם הגענו ל-500 פקודות ב-Batch בודד, שולחים אותו ויוצרים אחד חדש
                             if (operationCount === 500) {
                                 await currentBatch.commit();
                                 currentBatch = writeBatch(db);
@@ -296,13 +319,12 @@
                         }
                     }
 
-                    // שליחת השאריות שנותרו
                     if (operationCount > 0) {
                         await currentBatch.commit();
                     }
 
                     document.getElementById("upload-status").style.color = "#00a400";
-                    document.getElementById("upload-status").textContent = `✅ העלאה הושלמה! נשמרו ${uploadedCount} בוחרים בשרת!`;
+                    document.getElementById("upload-status").textContent = `✅ העלאה הושלמה! נשמרו ${uploadedCount} בוחרים עם כתובת מלאה!`;
                 } catch (error) {
                     console.error("שגיאה בהעלאת נתונים:", error);
                     document.getElementById("upload-status").style.color = "#e74c3c";
@@ -364,7 +386,6 @@
             return;
         }
 
-        // מיון נומרי בטוח של מספרי מסד (אם ערך מסוים אינו מספר הוא הופך ל-0 כדי למנוע קריסת מיון)
         filteredVoters.sort((a, b) => {
             const numA = Number(a.masad) || 0;
             const numB = Number(b.masad) || 0;
