@@ -1,285 +1,153 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות מתקדם ומאובטח</title>
+    <title>חמ"ל בחירות - מערכת שליטה וחיוג מהיר</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; color: #333; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
         .main-panel { flex: 3; min-width: 300px; }
-        .side-panel { flex: 1.2; min-width: 300px; }
+        .side-panel { flex: 1; min-width: 300px; }
         
-        /* מסך נעילה */
-        #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .login-input { width: 80%; padding: 12px; font-size: 18px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; letter-spacing: 5px; }
-        
-        #main-dashboard { display: none; }
-        
-        /* אזור שעון ספירה לאחור מרכזי ובולט */
-        .countdown-wrapper { position: relative; background: linear-gradient(135deg, #1877f2, #1565c0); color: white; padding: 25px; border-radius: 16px; text-align: center; margin: 0 auto 20px auto; max-width: 1360px; box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); }
-        .countdown-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .countdown-clock { font-size: 42px; font-weight: 900; font-family: monospace; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        
-        .settings-toggle-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: background 0.2s; display: none; }
-        .settings-toggle-btn:hover { background: rgba(255,255,255,0.35); }
-        .countdown-settings { display: none; margin-top: 15px; background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 8px; align-items: center; gap: 10px; justify-content: center; }
-        .countdown-settings input[type="time"] { border: none; padding: 5px; border-radius: 4px; font-size: 14px; font-weight: bold; }
-
-        /* פאנל בקרה מהיר */
+        /* פאנל בקרה */
         .control-panel { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .upload-zone { text-align: right; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .upload-btn { background-color: #1877f2; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
-        .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
-        .whatsapp-report-btn { background-color: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
+        .upload-zone { text-align: right; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .upload-btn { background-color: #1877f2; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
+        .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
+        .delete-all-btn:hover { background-color: #d21f3d; }
         .upload-zone input[type="file"] { display: none; }
         
-        .search-filter-zone { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; margin-top: 10px; }
-        .search-input { flex: 2; padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid #ccd0d5; box-sizing: border-box; }
-        .toggle-filter-btn { flex: 1; min-width: 160px; background-color: #f5f6f7; color: #4b4f56; border: 1px solid #ccd0d5; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        .toggle-filter-btn.active { background-color: #e7f3ff; color: #1877f2; border-color: #1877f2; }
-        .filter-select { padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid #ccd0d5; min-width: 180px; background-color: #fff; cursor: pointer; font-weight: bold; }
+        .filter-zone { text-align: right; display: flex; align-items: center; gap: 10px; }
+        .filter-select { padding: 10px 15px; font-size: 16px; border-radius: 6px; border: 1px solid #ccd0d5; min-width: 200px; background-color: #fff; cursor: pointer; font-weight: bold; }
 
-        /* מד התקדמות */
-        .progress-container { background-color: #e4e6eb; border-radius: 10px; height: 18px; width: 100%; margin: 15px 0; overflow: hidden; position: relative; }
-        .progress-bar { background: linear-gradient(90deg, #00a400, #4db8ff); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
-        .progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 12px; font-weight: bold; color: #333; line-height: 18px; }
-
-        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-card { flex: 1; min-width: 120px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
-        .stat-card h3 { margin: 0; color: #65676b; font-size: 13px; }
-        .stat-card .number { font-size: 24px; font-weight: bold; margin: 8px 0 0 0; color: #1877f2; }
+        /* כרטיסיות סטטיסטיקה */
+        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .stat-card h3 { margin: 0; color: #65676b; font-size: 14px; }
+        .stat-card .number { font-size: 28px; font-weight: bold; margin: 10px 0 0 0; color: #1877f2; }
+        .stat-card.highlight .number { color: #00a400; }
 
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .card h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; }
 
         table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 10px; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #f0f2f5; font-size: 14px; }
         th { background-color: #f8f9fa; color: #65676b; font-weight: 600; }
 
-        /* שורות בטבלה */
-        tr.voter-row-item { cursor: pointer; transition: background-color 0.15s; }
-        tr.voter-row-item:hover { background-color: #f0f2f5; }
-        tr.voted-row { color: #8d949e; text-decoration: line-through; background-color: #f9fafb; }
-        tr.reminder-row { background-color: #fff9db !important; animation: pulse-yellow 2s infinite alternate; }
-
-        @keyframes pulse-yellow {
-            from { background-color: #fff9db; }
-            to { background-color: #fff3bf; }
-        }
+        /* עיצוב שורות וחיוג */
+        tr.voted-row { background-color: #f9fafb; color: #8d949e; text-decoration: line-through; }
+        tr.voted-row td button { text-decoration: none; }
         
-        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .reminder-badge { background-color: #fff3bf; color: #f59f00; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-
+        .clickable-phone-cell { cursor: pointer; position: relative; }
+        tr:not(.voted-row) .clickable-phone-cell:hover { background-color: #e7f3ff; color: #1877f2; }
+        
+        .btn { background-color: #1877f2; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn.btn-cancel { background-color: #e4e6eb; color: #4b4f56; }
+        .btn.btn-cancel:hover { background-color: #d8dadf; }
+        
+        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; display: inline-block; }
+        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+        
         .admin-only { display: block; }
         body.user-view .admin-only { display: none !important; }
-        .chart-container { position: relative; height: 220px; width: 100%; margin: 15px auto; }
-
-        /* חלון מודאל (פופ-אפ לבוחר) */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background-color: #fff; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease-out; position: relative; }
-        .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #65676b; }
-        .modal h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; font-size: 20px; }
-        .voter-info-block { background: #f7f8fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
-        .modal-btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .modal-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-call { background-color: #00a400; color: white; }
-        .btn-voted { background-color: #1877f2; color: white; }
-        .btn-unvoted { background-color: #e4e6eb; color: #4b4f56; }
-        .btn-drive { background-color: #2196F3; color: white; }
-        .btn-remind { background-color: #f59f00; color: white; }
-        .btn-save-all { background-color: #2e7d32; color: white; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-save-all:hover { background-color: #1b5e20; }
-        
-        .modal-label { font-weight: bold; font-size: 13px; color: #65676b; margin-bottom: 5px; display: block; }
-        .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccd0d5; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
-        .modal-textarea:focus { border-color: #1877f2; outline: none; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<!-- מסך כניסה מאובטח -->
-<div id="login-screen">
-    <h2>🔒 מערכת חמ"ל סגורה</h2>
-    <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
-    <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
-    <br>
-    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">התחבר למערכת</button>
-    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
+<div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right;">
+    <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
+    <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
 </div>
 
-<!-- הדשבורד הראשי -->
-<div id="main-dashboard">
-    
-    <!-- שעון ספירה לאחור מרכזי ובולט -->
-    <div class="countdown-wrapper">
-        <button id="toggle-settings-btn" class="settings-toggle-btn admin-only" title="הגדרת שעת נעילה">⚙️</button>
-        <div class="countdown-title">⏱️ הזמן הנותר לסגירת הקלפיות</div>
-        <div class="countdown-clock" id="countdown-display">00:00:00</div>
+<!-- פאנל בקרה -->
+<div style="max-width: 1400px; margin: auto;" id="control-panel-container">
+    <div class="control-panel">
+        <div class="upload-zone admin-only">
+            <label class="upload-btn">
+                📁 טען קובץ בוחרים (CSV)
+                <input type="file" id="csv-file-input" accept=".csv">
+            </label>
+            <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק את כל פנקס הבוחרים הנוכחי</button>
+            <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
+        </div>
         
-        <div class="countdown-settings admin-only" id="timer-settings-box">
-            <label for="close-time-picker">🕒 <strong>שעת נעילה חדשה:</strong></label>
-            <input type="time" id="close-time-picker" value="22:00">
+        <div class="filter-zone" id="filter-wrapper">
+            <label for="manager-filter">🔍 <strong>הצג לפי אחראי:</strong></label>
+            <select id="manager-filter" class="filter-select">
+                <option value="all">🌍 כל האחראים (מבט מנהל)</option>
+            </select>
         </div>
     </div>
+</div>
 
-    <div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div>
-            <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
-            <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
-        </div>
-        <div class="admin-only" style="margin-top: 10px;">
-            <button class="whatsapp-report-btn" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
-        </div>
-    </div>
-
-    <div style="max-width: 1400px; margin: auto;" id="control-panel-container">
-        <div class="control-panel">
-            <div class="upload-zone admin-only">
-                <label class="upload-btn">
-                    📁 טען קובץ בוחרים (CSV)
-                    <input type="file" id="csv-file-input" accept=".csv">
-                </label>
-                <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק פנקס בוחרים</button>
-                <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
+<div class="dashboard-grid">
+    <div class="main-panel">
+        <!-- מוני דשבורד -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>סה"כ בוחרים</h3>
+                <div class="number" id="total-voters">0</div>
             </div>
-            
-            <div class="search-filter-zone">
-                <input type="text" id="search-bar" class="search-input" placeholder="🔍 חפש לפי שם, כתובת, מסד או טלפון...">
-                <button id="unvoted-toggle" class="toggle-filter-btn">📞 הצג רק מי שטרם הצביע</button>
-                
-                <div class="admin-only" id="filter-wrapper">
-                    <select id="manager-filter" class="filter-select">
-                        <option value="all">🌍 כל האחראים</option>
-                    </select>
-                </div>
+            <div class="stat-card highlight">
+                <h3>סה"כ הצביעו</h3>
+                <div class="number" id="total-voted">0</div>
             </div>
-        </div>
-    </div>
-
-    <div class="dashboard-grid">
-        <div class="main-panel">
-            
-            <!-- פס התקדמות ויזואלי -->
-            <div class="card" style="padding: 15px 20px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
-                    <span>📈 קצב התקדמות ההצבעות בחמ"ל</span>
-                    <span id="progress-percentage-label">0%</span>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="voters-progress-bar"></div>
-                    <div class="progress-text" id="progress-bar-text">0 / 0 הצביעו</div>
-                </div>
-            </div>
-
-            <div class="stats-container">
-                <div class="stat-card">
-                    <h3>סה"כ בוחרים</h3>
-                    <div class="number" id="total-voters">0</div>
-                </div>
-                <div class="stat-card highlight">
-                    <h3>סה"כ הצביעו</h3>
-                    <div class="number" id="total-voted">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>אחוז הצבעה</h3>
-                    <div class="number" id="voting-percentage">0%</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>מסד</th>
-                                <th>שם מלא</th>
-                                <th>כתובת</th>
-                                <th>טלפון</th>
-                                <th class="admin-only">אחראי</th>
-                                <th>הערות אחרונות</th>
-                                <th>סטטוס</th>
-                            </tr>
-                        </thead>
-                        <tbody id="voters-table-body">
-                            <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="stat-card">
+                <h3>אחוז הצבעה</h3>
+                <div class="number" id="voting-percentage">0%</div>
             </div>
         </div>
 
-        <div class="side-panel">
-            <div class="card">
-                <h2 id="chart-card-title">📊 יחס הצבעה</h2>
-                <div class="chart-container">
-                    <canvas id="votingPieChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card admin-only" id="side-panel-container">
-                <h2>👔 סיכום הספקי אחראים</h2>
-                <div class="chart-container" style="height: 200px; margin-bottom: 15px;">
-                    <canvas id="managersBarChart"></canvas>
-                </div>
+        <!-- פנקס הבוחרים -->
+        <div class="card">
+            <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
+            <p style="font-size: 13px; color: #65676b; margin-top: -5px; margin-bottom: 15px;" id="click-tip">💡 ניתן ללחוץ על פרטי הבוחר (שם/כתובת) כדי להתקשר אליו ישירות מהנייד!</p>
+            <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>אחראי</th>
-                            <th>בוחרים</th>
-                            <th>הצביעו</th>
+                            <th>מסד</th>
+                            <th>שם מלא</th>
+                            <th>כתובת מלאה</th>
+                            <th>טלפון</th>
+                            <th class="admin-only">אחראי משויך</th>
+                            <th>סטטוס</th>
+                            <th>פעולה</th>
                         </tr>
                     </thead>
-                    <tbody id="managers-table-body">
-                        <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
+                    <tbody id="voters-table-body">
+                        <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>
 
-<!-- חלון כרטיס בוחר חכם (Modal) -->
-<div id="voter-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" id="close-modal-btn">&times;</span>
-        <h3 id="modal-voter-name">שם הבוחר</h3>
-        
-        <div class="voter-info-block">
-            📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span><br>
-            📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span><br>
-            👤 <strong>אחראי:</strong> <span id="modal-voter-manager">-</span>
+    <!-- פאנל צדי -->
+    <div class="side-panel admin-only" id="side-panel-container">
+        <div class="card">
+            <h2>👔 סיכום הספקי אחראים</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>אחראי</th>
+                        <th>בוחרים</th>
+                        <th>הצביעו</th>
+                    </tr>
+                </thead>
+                <tbody id="managers-table-body">
+                    <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
+                </tbody>
+            </table>
         </div>
-
-        <div class="modal-btn-group">
-            <button class="modal-btn btn-call" id="modal-btn-call">📞 חיוג מהיר</button>
-            <button class="modal-btn btn-voted" id="modal-btn-toggle-vote">👍 סימון כהצביע</button>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ הגדר תזכורת לעוד שעה</button>
-            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
-        </div>
-
-        <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
-        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
-        
-        <!-- כפתור שמירה ייעודי ויציב למניעת כפילויות ודריסות -->
-        <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
-        
-        <div id="modal-save-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -293,127 +161,33 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const USERS_DB = {
-        "1111": { name: "מנהל", role: "admin" },
-        "2222": { name: "אבי", role: "user" },
-        "3333": { name: "ירון", role: "user" }
-    };
-
-    let sessionUser = null;
     let allVotersGlobal = [];
-    let showUnvotedOnly = false;
-    let targetTime = "22:00";
-    let countdownInterval = null;
-    let activeVoter = null; 
-    let tempReminderTime = null; // החזקת ערך תזכורת זמני עד לשמירה הסופית
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentUser = urlParams.get('user');
 
-    let pieChartInstance = null;
-    let barChartInstance = null;
-
-    document.getElementById("login-btn").addEventListener("click", checkLogin);
-    document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
-
-    function checkLogin() {
-        const code = document.getElementById("pass-input").value.trim();
-        if (USERS_DB[code]) {
-            sessionUser = USERS_DB[code];
-            sessionUser.token = code;
-            startDashboard();
-        } else {
-            document.getElementById("login-error").style.display = "block";
+    if (currentUser) {
+        document.body.classList.add("user-view");
+        document.getElementById("main-title").textContent = `שלום ${currentUser} 👋`;
+        document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - חיוג מהיר ועדכון בשטח`;
+        document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
+        document.getElementById("filter-wrapper").style.display = "none";
+        if(!document.getElementById("csv-file-input").files.length) {
+            document.getElementById("control-panel-container").style.display = "none";
         }
     }
 
-    function startDashboard() {
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("main-dashboard").style.display = "block";
-
-        if (sessionUser.role !== "admin") {
-            document.body.classList.add("user-view");
-            document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
-            document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - לחץ על שורה לפתיחת כרטיס בוחר`;
-            document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
-            document.getElementById("control-panel-container").style.display = "block";
-            document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
-        } else {
-            document.getElementById("toggle-settings-btn").style.display = "block";
-        }
-
-        onSnapshot(doc(db, "settings", "timer"), (docSnap) => {
-            if (docSnap.exists() && docSnap.data().closeTime) {
-                targetTime = docSnap.data().closeTime;
-                document.getElementById("close-time-picker").value = targetTime;
-            }
-            startCountdown();
+    onSnapshot(collection(db, "voters"), (snapshot) => {
+        const voters = [];
+        snapshot.forEach(doc => {
+            voters.push({ id: doc.id, ...doc.data() });
         });
-
-        // האזנה קבועה לבוחרים מ-Firebase
-        onSnapshot(collection(db, "voters"), (snapshot) => {
-            const voters = [];
-            snapshot.forEach(doc => {
-                voters.push({ id: doc.id, ...doc.data() });
-            });
-            allVotersGlobal = voters;
-            if (sessionUser.role === "admin") {
-                updateFilterDropdown(voters);
-            }
-            renderDashboard();
-
-            // עדכון הבוחר הפעיל ברקע אך ללא דריסת שדות הקלט בזמן ההקלדה
-            if (activeVoter) {
-                const updated = voters.find(v => v.id === activeVoter.id);
-                if (updated) {
-                    // עדכון הסטטוסים השקטים
-                    activeVoter.hasVoted = updated.hasVoted;
-                    refreshModalVoteButton();
-                }
-            }
-        });
-
-        setInterval(checkActiveReminders, 30000);
-    }
-
-    document.getElementById("toggle-settings-btn").addEventListener("click", () => {
-        const settingsBox = document.getElementById("timer-settings-box");
-        settingsBox.style.display = (settingsBox.style.display === "flex") ? "none" : "flex";
-    });
-
-    function startCountdown() {
-        if (countdownInterval) clearInterval(countdownInterval);
-        function updateClock() {
-            const now = new Date();
-            const [hours, minutes] = targetTime.split(":");
-            const targetDate = new Date();
-            targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-            if (targetDate < now) targetDate.setDate(targetDate.getDate() + 1);
-            const diff = targetDate - now;
-            if (diff <= 0) {
-                document.getElementById("countdown-display").textContent = "הקלפיות נסגרו!";
-                clearInterval(countdownInterval);
-                return;
-            }
-            const hrs = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
-            const mins = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
-            const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
-            document.getElementById("countdown-display").textContent = `${hrs}:${mins}:${secs}`;
+        allVotersGlobal = voters;
+        if (!currentUser) {
+            updateFilterDropdown(voters);
         }
-        updateClock();
-        countdownInterval = setInterval(updateClock, 1000);
-    }
-
-    document.getElementById("close-time-picker").addEventListener("change", async (e) => {
-        if (sessionUser.role !== "admin") return;
-        await setDoc(doc(db, "settings", "timer"), { closeTime: e.target.value }, { merge: true });
-        setTimeout(() => { document.getElementById("timer-settings-box").style.display = "none"; }, 1500);
-    });
-
-    document.getElementById("unvoted-toggle").addEventListener("click", function() {
-        showUnvotedOnly = !showUnvotedOnly;
-        this.classList.toggle("active", showUnvotedOnly);
         renderDashboard();
     });
-
-    document.getElementById("search-bar").addEventListener("input", renderDashboard);
 
     function updateFilterDropdown(voters) {
         const filterSelect = document.getElementById("manager-filter");
@@ -421,7 +195,7 @@
         const managers = new Set();
         voters.forEach(v => { if(v.manager) managers.add(v.manager); });
         
-        filterSelect.innerHTML = '<option value="all">🌍 כל האחראים</option>';
+        filterSelect.innerHTML = '<option value="all">🌍 כל האחראים (מבט מנהל)</option>';
         Array.from(managers).sort().forEach(manager => {
             const opt = document.createElement("option");
             opt.value = manager;
@@ -433,127 +207,127 @@
         }
     }
 
-    if (document.getElementById("manager-filter")) {
+    if (!currentUser) {
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    document.getElementById("whatsapp-report-btn").addEventListener("click", () => {
-        if (sessionUser.role !== "admin") return;
-        const totalVoters = allVotersGlobal.length;
-        const totalVoted = allVotersGlobal.filter(v => v.hasVoted === true).length;
-        const percentage = totalVoters > 0 ? Math.round((totalVoted / totalVoters) * 100) : 0;
+    // מנגנון מחיקה מלאה של כל המסמכים בשרת
+    if (!currentUser) {
+        document.getElementById("delete-all-btn").addEventListener("click", async function() {
+            const confirmDelete = confirm("⚠️ אזהרה חמורה!\nהאם אתה בטוח לחלוטין שברצונך למחוק את כל הבוחרים הנוכחיים מהמערכת?\nפעולה זו תאפס את הדשבורד לחלוטין ולא ניתן לבטל אותה.");
+            if (!confirmDelete) return;
 
-        const now = new Date();
-        const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            document.getElementById("upload-status").style.color = "#333";
+            document.getElementById("upload-status").textContent = "מוחק נתונים מהשרת...";
 
-        const stats = {};
-        allVotersGlobal.forEach(v => {
-            const m = v.manager || "מטה מרכזי";
-            if(!stats[m]) stats[m] = { total: 0, voted: 0 };
-            stats[m].total++;
-            if(v.hasVoted) stats[m].voted++;
+            try {
+                const querySnapshot = await getDocs(collection(db, "voters"));
+                const batch = writeBatch(db);
+                
+                querySnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+                document.getElementById("upload-status").style.color = "#00a400";
+                document.getElementById("upload-status").textContent = "🗑️ כל פנקס הבוחרים נמחק בהצלחה!";
+            } catch (error) {
+                console.error(error);
+                document.getElementById("upload-status").style.color = "#e74c3c";
+                document.getElementById("upload-status").textContent = "❌ תקלה בתהליך המחיקה.";
+            }
         });
+    }
 
-        let managerStatsText = "";
-        Object.keys(stats).forEach(name => {
-            const percent = stats[name].total > 0 ? Math.round((stats[name].voted / stats[name].total) * 100) : 0;
-            managerStatsText += `\n👤 *${name}*: ${stats[name].voted}/${stats[name].total} (${percent}%)`;
-        });
-
-        const reportText = `📢 *עדכון חמ"ל בחירות נכון לשעה ${currentTime}* 📢\n\n🎯 *אחוז הצבעה כללי:* ${percentage}%\n✅ *הצביעו:* ${totalVoted} מתוך ${totalVoters}\n\n📊 *הספקי אחראים בשטח:*${managerStatsText}\n\nשעון סגירת הקלפי סופר לאחור ל- *${targetTime}*! קדימה להגביר לחץ! 🚀`;
-        const encodedText = encodeURIComponent(reportText);
-        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-    });
-
-    document.getElementById("delete-all-btn").addEventListener("click", async function() {
-        if (sessionUser.role !== "admin") return;
-        if (!confirm("האם למחוק את כל נתוני הבוחרים לצמיתות?")) return;
-        try {
-            const querySnapshot = await getDocs(collection(db, "voters"));
-            const batch = writeBatch(db);
-            querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
-            await batch.commit();
-            alert("כל נתוני הבוחרים נמחקו.");
-        } catch (error) { alert("שגיאה במחיקה!"); }
-    });
-
+    // קריאת CSV עם מנגנון מובנה המונע חריגה ממגבלת 500 השורות של Firebase
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
-        if (!file || sessionUser.role !== "admin") return;
+        if (!file) return;
+
+        document.getElementById("upload-status").style.color = "#333";
+        document.getElementById("upload-status").textContent = "מעבד ומעלה...";
+
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             complete: async function(results) {
                 const rows = results.data;
-                const batch = writeBatch(db);
-                rows.forEach((row) => {
-                    const firstName = row["שם פרטי"] || row[" שם פרטי "] || "";
-                    const lastName = row["שם משפחה"] || row[" שם משפחה "] || "";
-                    const fullName = (firstName + " " + lastName).trim();
-                    if (fullName) {
-                        const managerName = (row["אחראי"] || row[" אחראי "] || "מטה מרכזי").trim();
-                        const masad = row["מסד"] || row[" מסד "] || "";
+                const totalRows = rows.length;
+                let currentBatch = writeBatch(db);
+                let operationCount = 0;
+                let uploadedCount = 0;
+
+                try {
+                    for (let i = 0; i < totalRows; i++) {
+                        const row = rows[i];
+                        const firstName = row["שם פרטי"] || "";
+                        const lastName = row["שם משפחה"] || "";
+                        const fullName = (firstName + " " + lastName).trim();
                         
-                        // קריאת רחוב, עיר ומספר בית תוך תמיכה מלאה ברווחים נסתרים בשמות העמודות
-                        const street = (row["רחוב"] || row[" רחוב "] || "").trim();
-                        const city = (row["עיר"] || row[" עיר "] || "").trim();
-                        const houseNum = (row["כתובת"] || row[" כתובת "] || row["מס בית"] || row[" מס בית "] || "").trim();
+                        if (fullName) {
+                            const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
+                            const masad = row["מסד"] || "";
+                            const street = row["רחוב"] || "";
+                            const houseNum = row["מס בית"] || "";
+                            const city = row["עיר"] || "";
+                            const address = `${street} ${houseNum}, ${city}`.trim();
+                            const phone = row["טלפון"] || row["נייד"] || "";
 
-                        // בניית הכתובת בצורה מדויקת ונקייה
-                        let address = "";
-                        if (street) {
-                            address = street;
-                            if (houseNum) address += " " + houseNum;
-                            if (city) address += ", " + city;
-                        } else if (houseNum) {
-                            address = houseNum;
-                            if (city) address += ", " + city;
-                        } else if (city) {
-                            address = city;
+                            const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
+                            const voterRef = doc(db, "voters", voterId);
+
+                            currentBatch.set(voterRef, {
+                                masad: masad,
+                                name: fullName,
+                                address: address,
+                                manager: managerName,
+                                phone: phone.trim()
+                            }, { merge: true });
+
+                            operationCount++;
+                            uploadedCount++;
+
+                            // אם הגענו ל-500 פקודות ב-Batch בודד, שולחים אותו ויוצרים אחד חדש
+                            if (operationCount === 500) {
+                                await currentBatch.commit();
+                                currentBatch = writeBatch(db);
+                                operationCount = 0;
+                            }
                         }
-                        address = address.replace(/\s+/g, " ").trim();
-
-                        const phone = row["טלפון"] || row[" טלפון "] || row["נייד"] || row[" נייד "] || "";
-
-                        const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
-                        batch.set(doc(db, "voters", voterId), {
-                            masad: masad,
-                            name: fullName,
-                            address: address,
-                            manager: managerName,
-                            phone: phone.trim(),
-                            secretPasscode: sessionUser.token,
-                            notes: "",
-                            hasVoted: false,
-                            reminderTime: null
-                        }, { merge: true });
                     }
-                });
-                await batch.commit();
-                alert("הקובץ נטען בהצלחה! הכתובות עודכנו וישוקפו מיד על המסך.");
+
+                    // שליחת השאריות שנותרו
+                    if (operationCount > 0) {
+                        await currentBatch.commit();
+                    }
+
+                    document.getElementById("upload-status").style.color = "#00a400";
+                    document.getElementById("upload-status").textContent = `✅ העלאה הושלמה! נשמרו ${uploadedCount} בוחרים בשרת!`;
+                } catch (error) {
+                    console.error("שגיאה בהעלאת נתונים:", error);
+                    document.getElementById("upload-status").style.color = "#e74c3c";
+                    document.getElementById("upload-status").textContent = "❌ תקלה בהעלאה.";
+                }
             }
         });
     });
 
+    window.callVoter = function(phoneNumber, hasVoted) {
+        if (hasVoted) return;
+        if (phoneNumber) {
+            window.location.href = `tel:${phoneNumber}`;
+        } else {
+            alert("לא הוזן מספר טלפון עבור בוחר זה בקובץ ה-CSV");
+        }
+    };
+
     function renderDashboard() {
-        const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
-        const searchQuery = document.getElementById("search-bar").value.toLowerCase();
+        const activeFilter = currentUser ? currentUser : document.getElementById("manager-filter").value;
         
-        let filteredVoters = allVotersGlobal.filter(v => {
-            if (sessionUser.role === "admin" && activeFilter === "all") return true;
+        const filteredVoters = allVotersGlobal.filter(v => {
+            if (activeFilter === "all") return true;
             return v.manager === activeFilter;
         });
-
-        if (showUnvotedOnly) filteredVoters = filteredVoters.filter(v => !v.hasVoted);
-
-        if (searchQuery) {
-            filteredVoters = filteredVoters.filter(v => 
-                (v.name && v.name.toLowerCase().includes(searchQuery)) ||
-                (v.address && v.address.toLowerCase().includes(searchQuery)) ||
-                (v.phone && v.phone.includes(searchQuery)) ||
-                (v.masad && v.masad.includes(searchQuery))
-            );
-        }
 
         const totalVoters = filteredVoters.length;
         const totalVoted = filteredVoters.filter(v => v.hasVoted === true).length;
@@ -562,227 +336,71 @@
         document.getElementById("total-voters").textContent = totalVoters;
         document.getElementById("total-voted").textContent = totalVoted;
         document.getElementById("voting-percentage").textContent = percentage + "%";
-        document.getElementById("voters-progress-bar").style.width = percentage + "%";
-        document.getElementById("progress-bar-text").textContent = `${totalVoted} מתוך ${totalVoters} הצביעו`;
-        document.getElementById("progress-percentage-label").textContent = percentage + "%";
 
-        renderCharts(totalVoted, totalVoters - totalVoted);
-
-        if (sessionUser.role === "admin") {
+        if (!currentUser) {
             const managersBody = document.getElementById("managers-table-body");
             managersBody.innerHTML = "";
             const managerStats = {};
+
             allVotersGlobal.forEach(v => {
                 const mName = v.manager || "מטה מרכזי";
                 if (!managerStats[mName]) managerStats[mName] = { total: 0, voted: 0 };
                 managerStats[mName].total++;
                 if (v.hasVoted) managerStats[mName].voted++;
             });
+
             Object.keys(managerStats).sort().forEach(mName => {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td>${managerStats[mName].voted}</td>`;
+                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td style="color:#00a400; font-weight:bold;">${managerStats[mName].voted}</td>`;
                 managersBody.appendChild(row);
             });
-            renderManagerBarChart(managerStats);
         }
 
         const votersBody = document.getElementById("voters-table-body");
         votersBody.innerHTML = "";
 
         if(filteredVoters.length === 0) {
-            votersBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">אין בוחרים תואמים לסינון.</td></tr>`;
+            votersBody.innerHTML = `<tr><td colspan="${currentUser ? 6 : 7}" style="text-align:center;">אין בוחרים להצגה.</td></tr>`;
             return;
         }
 
-        filteredVoters.sort((a, b) => Number(a.masad) - Number(b.masad)).forEach(v => {
+        // מיון נומרי בטוח של מספרי מסד (אם ערך מסוים אינו מספר הוא הופך ל-0 כדי למנוע קריסת מיון)
+        filteredVoters.sort((a, b) => {
+            const numA = Number(a.masad) || 0;
+            const numB = Number(b.masad) || 0;
+            return numA - numB;
+        }).forEach(v => {
             const row = document.createElement("tr");
-            row.classList.add("voter-row-item");
-            if (v.hasVoted) row.classList.add("voted-row");
-            
-            // צביעה בצהוב יציב על בסיס נתונים שנשמרו ב-Firebase
-            if (v.reminderTime && !v.hasVoted) {
-                row.classList.add("reminder-row");
+            if (v.hasVoted) {
+                row.classList.add("voted-row");
             }
 
-            let statusBadge = v.hasVoted ? '<span class="voted-badge">✓ הצביע</span>' : '<span class="not-voted-badge">טרם הצביע</span>';
-            if (v.reminderTime && !v.hasVoted) {
-                statusBadge += ' <span class="reminder-badge">⏰ תזכורת</span>';
-            }
+            const statusBadge = v.hasVoted ? '<span class="voted-badge">✓ הצביע</span>' : '<span class="not-voted-badge">טרם הצביע</span>';
+            const actionButton = v.hasVoted ? 
+                `<button class="btn btn-cancel" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', false)">↩️ ביטול</button>` : 
+                `<button class="btn" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', true)">👍 הצביע</button>`;
+
+            const displayPhone = v.phone || '<i>לא קיים</i>';
+            const hasVotedStatus = v.hasVoted ? 'true' : 'false';
 
             row.innerHTML = `
-                <td>${v.masad || '-'}</td>
-                <td><strong>${v.name}</strong></td>
-                <td>${v.address || '-'}</td>
-                <td>${v.phone || ''}</td>
-                ${sessionUser.role === 'admin' ? `<td>${v.manager}</td>` : ''}
-                <td style="color: #555; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${v.notes || '-'}</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.masad || '-'}</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})"><strong>${v.name}</strong> 📞</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.address || '-'}</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${displayPhone}</td>
+                ${currentUser ? '' : `<td><span style="color:#65676b;">${v.manager}</span></td>`}
                 <td>${statusBadge}</td>
+                <td>${actionButton}</td>
             `;
-
-            row.addEventListener("click", () => openVoterModal(v));
             votersBody.appendChild(row);
         });
     }
 
-    /* --- מערכת חלון כרטיס בוחר חכם (Modal) --- */
-    const modal = document.getElementById("voter-modal");
-    
-    function openVoterModal(voter) {
-        activeVoter = voter;
-        tempReminderTime = voter.reminderTime || null; // החזקת המצב הקיים מ-Firebase
-        
-        modal.style.display = "flex";
-        
-        document.getElementById("modal-voter-name").textContent = voter.name;
-        document.getElementById("modal-voter-address").textContent = voter.address || '-';
-        document.getElementById("modal-voter-phone").textContent = voter.phone || '-';
-        document.getElementById("modal-voter-manager").textContent = voter.manager || 'מטה מרכזי';
-        
-        const notesInput = document.getElementById("modal-notes-input");
-        notesInput.value = voter.notes || '';
-        
-        document.getElementById("modal-save-status").textContent = "";
-
-        refreshModalVoteButton();
-    }
-
-    function refreshModalVoteButton() {
-        const toggleVoteBtn = document.getElementById("modal-btn-toggle-vote");
-        if (activeVoter.hasVoted) {
-            toggleVoteBtn.textContent = "↩️ בטל סימון הצבעה";
-            toggleVoteBtn.className = "modal-btn btn-unvoted";
-        } else {
-            toggleVoteBtn.textContent = "👍 סימון כהצביע";
-            toggleVoteBtn.className = "modal-btn btn-voted";
-        }
-    }
-
-    document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
-    window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
-
-    // כפתור חיוג מהיר
-    document.getElementById("modal-btn-call").addEventListener("click", () => {
-        if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
-    });
-
-    // שינוי סטטוס הצבעה מיידי
-    document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
-        if (!activeVoter) return;
-        const nextStatus = !activeVoter.hasVoted;
-        await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
-    });
-
-    // כפתור תזכורת - מוסיף הערה זמנית ומחזיק את זמן היעד בזיכרון עד ללחיצה על "שמור"
-    document.getElementById("modal-btn-remind").addEventListener("click", () => {
-        if (!activeVoter) return;
-        
-        const now = new Date();
-        const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
-        const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
-        
-        tempReminderTime = futureTime.getTime(); // שומר את ה-Timestamp בזיכרון הזמני
-
-        const notesInput = document.getElementById("modal-notes-input");
-        let currentText = notesInput.value.trim();
-        const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
-        
-        if (currentText && !currentText.includes("תזכורת:")) {
-            notesInput.value = currentText + "\n" + reminderText;
-        } else if (!currentText.includes("תזכורת:")) {
-            notesInput.value = reminderText;
-        }
-        
-        document.getElementById("modal-save-status").style.color = "#f59f00";
-        document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
-    });
-
-    // כפתור שמירה ייעודי ויציב לשמירה סופית של כל השינויים של הבוחר
-    document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
-        if (!activeVoter) return;
-        
-        const saveStatus = document.getElementById("modal-save-status");
-        saveStatus.style.color = "#2e7d32";
-        saveStatus.textContent = "💾 שומר נתונים בשרת...";
-
-        const notesInput = document.getElementById("modal-notes-input");
-        
-        try {
-            await updateDoc(doc(db, "voters", activeVoter.id), {
-                notes: notesInput.value,
-                reminderTime: tempReminderTime
-            });
-            
-            saveStatus.textContent = "✅ השינויים נשמרו בהצלחה!";
-            
-            setTimeout(() => {
-                modal.style.display = "none";
-                activeVoter = null;
-            }, 1000);
-            
-        } catch (error) {
-            console.error("Error saving voter:", error);
-            saveStatus.style.color = "red";
-            saveStatus.textContent = "❌ שגיאה בשמירת הנתונים!";
-        }
-    });
-
-    // שליחה לאחראי הסעות בוואטסאפ
-    document.getElementById("modal-btn-drive").addEventListener("click", () => {
-        if (!activeVoter) return;
-        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
-    });
-
-    // בדיקת תזכורות שפג תוקפן
-    function checkActiveReminders() {
-        const currentTime = new Date().getTime();
-        allVotersGlobal.forEach(async v => {
-            if (v.reminderTime && currentTime >= v.reminderTime && !v.hasVoted) {
-                alert(`⏰ תזכורת חמ"ל: הגיע הזמן לחזור אל ${v.name} (טלפון: ${v.phone})!`);
-                await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
-            }
-        });
-    }
-
-    /* --- סוף מערכת מודאל --- */
-
-    function renderCharts(voted, left) {
-        const ctx = document.getElementById('votingPieChart').getContext('2d');
-        if (pieChartInstance) pieChartInstance.destroy();
-        pieChartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['הצביעו', 'טרם הצביעו'],
-                datasets: [{ data: [voted, left], backgroundColor: ['#00a400', '#e4e6eb'], borderWidth: 1 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
-    }
-
-    function renderManagerBarChart(managerStats) {
-        const ctx = document.getElementById('managersBarChart');
-        if (!ctx) return;
-        if (barChartInstance) barChartInstance.destroy();
-        const labels = Object.keys(managerStats);
-        const votedData = labels.map(l => managerStats[l].voted);
-        const totalData = labels.map(l => managerStats[l].total);
-        barChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'הצביעו', data: votedData, backgroundColor: '#00a400' },
-                    { label: 'סה"כ שויכו', data: totalData, backgroundColor: '#1877f2' }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
+    window.toggleVoterStatus = async function(voterId, status) {
+        const voterRef = doc(db, "voters", voterId);
+        await updateDoc(voterRef, { hasVoted: status });
+    };
 </script>
+
 </body>
 </html>
