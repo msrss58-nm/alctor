@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות מתקדמם ומאובטח</title>
+    <title>חמ"ל בחירות מתקדם ומאובטח</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; color: #333; }
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
@@ -17,10 +17,14 @@
         #main-dashboard { display: none; }
         
         /* אזור שעון ספירה לאחור מרכזי ובולט */
-        .countdown-wrapper { background: linear-gradient(135deg, #1877f2, #1565c0); color: white; padding: 25px; border-radius: 16px; text-align: center; margin: 0 auto 20px auto; max-width: 1360px; box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); }
+        .countdown-wrapper { position: relative; background: linear-gradient(135deg, #1877f2, #1565c0); color: white; padding: 25px; border-radius: 16px; text-align: center; margin: 0 auto 20px auto; max-width: 1360px; box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); }
         .countdown-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .countdown-clock { font-size: 42px; font-weight: 900; font-family: monospace; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .countdown-settings { margin-top: 15px; background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; }
+        
+        /* כפתור הגדרות שעון מוסתר למנהל בלבד (אפשרות ב') */
+        .settings-toggle-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: background 0.2s; display: none; }
+        .settings-toggle-btn:hover { background: rgba(255,255,255,0.35); }
+        .countdown-settings { display: none; margin-top: 15px; background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 8px; align-items: center; gap: 10px; justify-content: center; }
         .countdown-settings input[type="time"] { border: none; padding: 5px; border-radius: 4px; font-size: 14px; font-weight: bold; }
 
         /* פאנל בקרה מהיר */
@@ -95,12 +99,15 @@
     
     <!-- שעון ספירה לאחור מרכזי ובולט -->
     <div class="countdown-wrapper">
+        <!-- כפתור גלגל שיניים קטן ונסתר לפתיחת הגדרות שעה (אפשרות ב') -->
+        <button id="toggle-settings-btn" class="settings-toggle-btn admin-only" title="הגדרת שעת נעילה">⚙️</button>
+
         <div class="countdown-title">⏱️ הזמן הנותר לסגירת הקלפיות</div>
         <div class="countdown-clock" id="countdown-display">00:00:00</div>
         
-        <!-- אפשרות לערוך שעה רק למנהל -->
-        <div class="countdown-settings admin-only">
-            <label for="close-time-picker">🕒 <strong>הגדר שעת נעילה:</strong></label>
+        <!-- אפשרות לערוך שעה (מוסתרת כברירת מחדל, נפתחת רק בלחיצה למנהל) -->
+        <div class="countdown-settings admin-only" id="timer-settings-box">
+            <label for="close-time-picker">🕒 <strong>שעת נעילה חדשה:</strong></label>
             <input type="time" id="close-time-picker" value="22:00">
         </div>
     </div>
@@ -281,8 +288,11 @@
             document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
             document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - חיוג מהיר ומאובטח`;
             document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
-            document.getElementById("control-panel-container").style.display = "block"; // נשאיר בשביל חיפוש וסינונים
+            document.getElementById("control-panel-container").style.display = "block";
             document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
+        } else {
+            // הצגת כפתור גלגל השיניים רק למנהל
+            document.getElementById("toggle-settings-btn").style.display = "block";
         }
 
         // האזנה לזמן סגירת הקלפיות ב-Firebase
@@ -308,6 +318,16 @@
         });
     }
 
+    // ניהול פתיחה/סגירה של פאנל הגדרות השעון בלחיצה (אפשרות ב')
+    document.getElementById("toggle-settings-btn").addEventListener("click", () => {
+        const settingsBox = document.getElementById("timer-settings-box");
+        if (settingsBox.style.display === "flex") {
+            settingsBox.style.display = "none";
+        } else {
+            settingsBox.style.display = "flex";
+        }
+    });
+
     // הגדרת שעון סגירה לאחור
     function startCountdown() {
         if (countdownInterval) clearInterval(countdownInterval);
@@ -319,7 +339,6 @@
             const targetDate = new Date();
             targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-            // אם שעת היעד עברה להיום, נתייחס לשעת היעד של מחר
             if (targetDate < now) {
                 targetDate.setDate(targetDate.getDate() + 1);
             }
@@ -343,11 +362,16 @@
         countdownInterval = setInterval(updateClock, 1000);
     }
 
-    // עדכון שעת סגירה על ידי מנהל
+    // עדכון שעת סגירה על ידי מנהל + סגירת הפאנל אוטומטית אחרי בחירה
     document.getElementById("close-time-picker").addEventListener("change", async (e) => {
         if (sessionUser.role !== "admin") return;
         const newTime = e.target.value;
         await setDoc(doc(db, "settings", "timer"), { closeTime: newTime }, { merge: true });
+        
+        // סגירה אוטומטית של חלונית העריכה 1.5 שניות לאחר השינוי בשביל ניקיון ויזואלי
+        setTimeout(() => {
+            document.getElementById("timer-settings-box").style.display = "none";
+        }, 1500);
     });
 
     // כפתור הצג רק מי שטרם הצביע
@@ -390,7 +414,6 @@
         const totalVoted = allVotersGlobal.filter(v => v.hasVoted === true).length;
         const percentage = totalVoters > 0 ? Math.round((totalVoted / totalVoters) * 100) : 0;
 
-        // בניית נתונים לכל אחראי
         const stats = {};
         allVotersGlobal.forEach(v => {
             const m = v.manager || "מטה מרכזי";
@@ -478,7 +501,6 @@
         if (phoneNumber) window.location.href = `tel:${phoneNumber}`;
     };
 
-    // שמירת הערה ב-Firebase בעת שינוי
     window.saveNote = async function(voterId, value) {
         const voterRef = doc(db, "voters", voterId);
         await updateDoc(voterRef, { notes: value });
@@ -488,18 +510,15 @@
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
         
-        // סינון ראשוני
         let filteredVoters = allVotersGlobal.filter(v => {
             if (sessionUser.role === "admin" && activeFilter === "all") return true;
             return v.manager === activeFilter;
         });
 
-        // סינון רק מי שטרם הצביע
         if (showUnvotedOnly) {
             filteredVoters = filteredVoters.filter(v => !v.hasVoted);
         }
 
-        // חיפוש חופשי
         if (searchQuery) {
             filteredVoters = filteredVoters.filter(v => 
                 (v.name && v.name.toLowerCase().includes(searchQuery)) ||
@@ -513,7 +532,6 @@
         const totalVoted = filteredVoters.filter(v => v.hasVoted === true).length;
         const percentage = totalVoters > 0 ? Math.round((totalVoted / totalVoters) * 100) : 0;
 
-        // עדכון אחוזים ופס התקדמות
         document.getElementById("total-voters").textContent = totalVoters;
         document.getElementById("total-voted").textContent = totalVoted;
         document.getElementById("voting-percentage").textContent = percentage + "%";
@@ -522,10 +540,8 @@
         document.getElementById("progress-bar-text").textContent = `${totalVoted} מתוך ${totalVoters} הצביעו`;
         document.getElementById("progress-percentage-label").textContent = percentage + "%";
 
-        // ציור גרפים
         renderCharts(totalVoted, totalVoters - totalVoted);
 
-        // טבלת מנהלים צדדית
         if (sessionUser.role === "admin") {
             const managersBody = document.getElementById("managers-table-body");
             managersBody.innerHTML = "";
@@ -547,7 +563,6 @@
             renderManagerBarChart(managerStats);
         }
 
-        // טבלת בוחרים ראשית
         const votersBody = document.getElementById("voters-table-body");
         votersBody.innerHTML = "";
 
@@ -581,7 +596,6 @@
         });
     }
 
-    // עדכון גרף עוגה (הצביעו מול נשארו)
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
         if (pieChartInstance) pieChartInstance.destroy();
@@ -606,7 +620,6 @@
         });
     }
 
-    // עדכון גרף עמודות של הספקי המנהלים
     function renderManagerBarChart(managerStats) {
         const ctx = document.getElementById('managersBarChart');
         if (!ctx) return;
