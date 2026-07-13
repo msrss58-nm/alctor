@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -243,7 +243,7 @@
     </div>
 </div>
 
-<!-- חלון כרטיס בוחר חכם (Modal) -->
+<!-- חלון כרטיס בוחר חכם (Modal) - שדה מסד הוסר מכאן -->
 <div id="voter-modal" class="modal">
     <div class="modal-content">
         <span class="close-modal" id="close-modal-btn">&times;</span>
@@ -251,7 +251,6 @@
         
         <div class="voter-info-block">
             📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span><br>
-            🆔 <strong>מספר מסד:</strong> <span id="modal-voter-masad">-</span><br>
             📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span><br>
             👤 <strong>אחראי:</strong> <span id="modal-voter-manager">-</span>
         </div>
@@ -300,7 +299,7 @@
     let showUnvotedOnly = false;
     let targetTime = "22:00";
     let countdownInterval = null;
-    let activeVoter = null; // הבוחר שפתוח כרגע בחלון
+    let activeVoter = null; 
 
     let pieChartInstance = null;
     let barChartInstance = null;
@@ -354,7 +353,7 @@
             }
             renderDashboard();
 
-            // אם יש חלון פתוח, נעדכן את הנתונים שלו ברקע (למעט שדה ההערות שבו המשתמש מקליד!)
+            // עדכון דינמי של הנתונים בחלון הפתוח ללא הפרעה להקלדה
             if (activeVoter) {
                 const updated = voters.find(v => v.id === activeVoter.id);
                 if (updated) {
@@ -364,7 +363,7 @@
             }
         });
 
-        // בדיקה קבועה בכל דקה עבור תזכורות שפג תוקפן
+        // בדיקה קבועה בכל 30 שניות עבור תזכורות שפג תוקפן
         setInterval(checkActiveReminders, 30000);
     }
 
@@ -432,7 +431,6 @@
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    // שליחת דוח לוואטסאפ עם שעת שליחה באותה שורה
     document.getElementById("whatsapp-report-btn").addEventListener("click", () => {
         if (sessionUser.role !== "admin") return;
         const totalVoters = allVotersGlobal.length;
@@ -515,7 +513,6 @@
         });
     });
 
-    // פונקציית רינדור דשבורד
     function renderDashboard() {
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
@@ -580,7 +577,7 @@
             row.classList.add("voter-row-item");
             if (v.hasVoted) row.classList.add("voted-row");
             
-            // סימון שורה עם תזכורת פעילה
+            // סימון יציב לשורה עם תזכורת פעילה (מסתמך על הערך שנמשך מ-Firebase)
             if (v.reminderTime && !v.hasVoted) {
                 row.classList.add("reminder-row");
             }
@@ -600,7 +597,6 @@
                 <td>${statusBadge}</td>
             `;
 
-            // לחיצה על השורה פותחת את החלון החכם
             row.addEventListener("click", () => openVoterModal(v));
             votersBody.appendChild(row);
         });
@@ -613,22 +609,16 @@
         activeVoter = voter;
         modal.style.display = "flex";
         
-        // מילוי הנתונים
         document.getElementById("modal-voter-name").textContent = voter.name;
         document.getElementById("modal-voter-address").textContent = voter.address || '-';
-        document.getElementById("modal-voter-masad").textContent = voter.masad || '-';
         document.getElementById("modal-voter-phone").textContent = voter.phone || '-';
         document.getElementById("modal-voter-manager").textContent = voter.manager || 'מטה מרכזי';
         
-        // מילוי שדה הערות בפעם הראשונה
         const notesInput = document.getElementById("modal-notes-input");
         notesInput.value = voter.notes || '';
         document.getElementById("modal-save-status").textContent = "";
 
-        // ניתוק מאזינים קודמים ומניעת כפילויות
         notesInput.oninput = null;
-        
-        // שמירה אוטומטית רק בהקלדה ללא דריסה של כל הטבלה
         notesInput.oninput = (e) => {
             debouncedSaveNotes(activeVoter.id, e.target.value);
         };
@@ -636,7 +626,6 @@
         refreshModalData();
     }
 
-    // עדכון דינמי של כפתורי המצב בחלון (משתנה ברקע אם מישהו אחר לוחץ)
     function refreshModalData() {
         const toggleVoteBtn = document.getElementById("modal-btn-toggle-vote");
         if (activeVoter.hasVoted) {
@@ -648,23 +637,21 @@
         }
     }
 
-    // סגירת מודאל
     document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
     window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
 
-    // כפתור חיוג מהיר מהחלון
+    // כפתור חיוג מהיר
     document.getElementById("modal-btn-call").addEventListener("click", () => {
         if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
     });
 
-    // כפתור שינוי סטטוס הצבעה מהחלון
+    // שינוי סטטוס הצבעה
     document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
         if (!activeVoter) return;
         const nextStatus = !activeVoter.hasVoted;
         await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
-    // מנגנון שמירה עם השהיה (Debounce) כדי לא להעמיס על השרת בכל אות
     let saveTimeout = null;
     function debouncedSaveNotes(voterId, text) {
         document.getElementById("modal-save-status").textContent = "📝 מקליד...";
@@ -675,42 +662,38 @@
         }, 800);
     }
 
-    // כפתור תזכורת לחזור אליו עוד שעה
+    // תזכורת (חזור אליו) - תיקון: השמירה נשלחת ישירות ל-Firebase כדי שהצבע הצהוב יהיה קבוע ולא יימחק
     document.getElementById("modal-btn-remind").addEventListener("click", async () => {
         if (!activeVoter) return;
         const now = new Date();
-        // קביעת זמן היעד לעוד שעה מהרגע
         const reminderTimestamp = now.getTime() + (60 * 60 * 1000); 
+        const updatedNotes = (activeVoter.notes ? activeVoter.notes + " | " : "") + "הגדיר תזכורת לחזור אליו עוד שעה";
         
         await updateDoc(doc(db, "voters", activeVoter.id), { 
             reminderTime: reminderTimestamp,
-            notes: (activeVoter.notes ? activeVoter.notes + " | " : "") + "הגדיר תזכורת לחזור אליו"
+            notes: updatedNotes
         });
         
-        alert(`הוגדרה תזכורת עבור ${activeVoter.name}. השורה תיצבע בצהוב ותקפוץ התראה בעוד שעה!`);
+        alert(`הוגדרה תזכורת עבור ${activeVoter.name}. השורה כעת צבועה בצהוב ותישאר כך!`);
         modal.style.display = "none";
+        activeVoter = null;
     });
 
-    // כפתור הזמנת הסעה - פותח חלון וואטסאפ מהיר לאחראי הסעות
-    document.getElementById("modal-btn-drive") .addEventListener("click", () => {
+    // שלח לאחראי הסעות - תיקון: פתיחת וואטסאפ ישירה ללא פופ-אפ מתווך מציק במערכת
+    document.getElementById("modal-btn-drive").addEventListener("click", () => {
         if (!activeVoter) return;
         
-        const driverName = prompt("הזן את שם נהג או אחראי ההסעות (או לחץ אישור לשליחה כללית):", "אחראי הסעות");
-        if (driverName === null) return; // ביטול
-
-        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד/קלפי:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
+        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
         
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
     });
 
-    // בדיקת התראות שפג תוקפן בשביל להקפיץ הודעה על המסך
+    // בדיקת תזכורות שפג תוקפן
     function checkActiveReminders() {
         const currentTime = new Date().getTime();
         allVotersGlobal.forEach(async v => {
             if (v.reminderTime && currentTime >= v.reminderTime && !v.hasVoted) {
-                // הקפצת התראה למסך
                 alert(`⏰ תזכורת חמ"ל: הגיע הזמן לחזור אל ${v.name} (טלפון: ${v.phone})!`);
-                // איפוס התזכורת ב-DB כדי שלא תקפוץ שוב בלופ
                 await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
             }
         });
