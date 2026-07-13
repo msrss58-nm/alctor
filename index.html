@@ -321,7 +321,7 @@
     // ניהול פתיחה/סגירה של פאנל הגדרות השעון בלחיצה (אפשרות ב')
     document.getElementById("toggle-settings-btn").addEventListener("click", () => {
         const settingsBox = document.getElementById("timer-settings-box");
-        if (settingsBox.style.display === "flex") {
+        if (settingsBox.style.display === "flex" || settingsBox.style.display === "block") {
             settingsBox.style.display = "none";
         } else {
             settingsBox.style.display = "flex";
@@ -406,13 +406,17 @@
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    // יצירת דוח ושליחה לוואטסאפ
+    // יצירת דוח ושליחה לוואטסאפ כולל שעת שליחה דינמית באותה שורה
     document.getElementById("whatsapp-report-btn").addEventListener("click", () => {
         if (sessionUser.role !== "admin") return;
 
         const totalVoters = allVotersGlobal.length;
         const totalVoted = allVotersGlobal.filter(v => v.hasVoted === true).length;
         const percentage = totalVoters > 0 ? Math.round((totalVoted / totalVoters) * 100) : 0;
+
+        // חילוץ השעה הנוכחית של הלחיצה בפורמט HH:MM
+        const now = new Date();
+        const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
         const stats = {};
         allVotersGlobal.forEach(v => {
@@ -428,7 +432,8 @@
             managerStatsText += `\n👤 *${name}*: ${stats[name].voted}/${stats[name].total} (${percent}%)`;
         });
 
-        const reportText = `📢 *עדכון חמ"ל בחירות* 📢\n\n🎯 *אחוז הצבעה כללי:* ${percentage}%\n✅ *הצביעו:* ${totalVoted} מתוך ${totalVoters}\n\n📊 *הספקי אחראים בשטח:*${managerStatsText}\n\nשעון סגירת הקלפי סופר לאחור ל- *${targetTime}*! קדימה להגביר לחץ! 🚀`;
+        // כותרת מעודכנת עם שעת המשלוח הדינמית באותה שורה
+        const reportText = `📢 *עדכון חמ"ל בחירות נכון לשעה ${currentTime}* 📢\n\n🎯 *אחוז הצבעה כללי:* ${percentage}%\n✅ *הצביעו:* ${totalVoted} מתוך ${totalVoters}\n\n📊 *הספקי אחראים בשטח:*${managerStatsText}\n\nשעון סגירת הקלפי סופר לאחור ל- *${targetTime}*! קדימה להגביר לחץ! 🚀`;
         
         const encodedText = encodeURIComponent(reportText);
         window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
