@@ -5,132 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>חמ"ל בחירות מתקדם ומאובטח</title>
     <style>
-        :root {
-            --primary: #1877f2;
-            --primary-hover: #1565c0;
-            --success: #00a400;
-            --success-hover: #008700;
-            --danger: #f02849;
-            --danger-hover: #d11a37;
-            --warning: #f59f00;
-            --bg-main: #f0f2f5;
-            --bg-card: #ffffff;
-            --text-main: #1c1e21;
-            --text-muted: #65676b;
-            --border: #ccd0d5;
-        }
-
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; 
-            background-color: var(--bg-main); 
-            margin: 0; 
-            padding: 15px; 
-            color: var(--text-main); 
-            line-height: 1.5;
-        }
-
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; color: #333; }
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
         .main-panel { flex: 3; min-width: 300px; }
         .side-panel { flex: 1.2; min-width: 300px; }
         
-        /* מסך נעילה משודרג */
-        #login-screen { 
-            max-width: 400px; 
-            margin: 100px auto; 
-            background: var(--bg-card); 
-            padding: 40px 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
-            text-align: center; 
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .login-input { 
-            width: 80%; 
-            padding: 14px; 
-            font-size: 20px; 
-            text-align: center; 
-            border-radius: 8px; 
-            border: 2px solid var(--border); 
-            margin-bottom: 20px; 
-            letter-spacing: 6px; 
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .login-input:focus { border-color: var(--primary); }
+        /* מסך נעילה */
+        #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .login-input { width: 80%; padding: 12px; font-size: 18px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; letter-spacing: 5px; }
         
         #main-dashboard { display: none; }
         
-        /* שעון ספירה לאחור */
-        .countdown-wrapper { 
-            position: relative; 
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover)); 
-            color: white; 
-            padding: 25px; 
-            border-radius: 16px; 
-            text-align: center; 
-            margin: 0 auto 20px auto; 
-            max-width: 1360px; 
-            box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); 
-        }
+        /* אזור שעון ספירה לאחור מרכזי ובולט */
+        .countdown-wrapper { position: relative; background: linear-gradient(135deg, #1877f2, #1565c0); color: white; padding: 25px; border-radius: 16px; text-align: center; margin: 0 auto 20px auto; max-width: 1360px; box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); }
         .countdown-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .countdown-clock { font-size: 42px; font-weight: 900; font-family: monospace; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         
-        .settings-toggle-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: background 0.2s; }
+        .settings-toggle-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: background 0.2s; display: none; }
         .settings-toggle-btn:hover { background: rgba(255,255,255,0.35); }
-        .countdown-settings { display: none; margin-top: 15px; background: rgba(255,255,255,0.15); padding: 10px 15px; border-radius: 8px; align-items: center; gap: 10px; justify-content: center; }
-        .countdown-settings input[type="time"] { border: none; padding: 6px; border-radius: 6px; font-size: 14px; font-weight: bold; outline: none; }
+        .countdown-settings { display: none; margin-top: 15px; background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 8px; align-items: center; gap: 10px; justify-content: center; }
+        .countdown-settings input[type="time"] { border: none; padding: 5px; border-radius: 4px; font-size: 14px; font-weight: bold; }
 
         /* פאנל בקרה מהיר */
-        .control-panel { background: var(--bg-card); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .control-panel { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .upload-zone { text-align: right; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        
-        /* כפתורים כלליים */
-        .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.2s, transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-danger { background-color: var(--danger); color: white; }
-        .btn-danger:hover { background-color: var(--danger-hover); }
-        .btn-success { background-color: #25D366; color: white; }
-        .btn-success:hover { background-color: #20ba5a; }
-
+        .upload-btn { background-color: #1877f2; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
+        .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
+        .whatsapp-report-btn { background-color: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .upload-zone input[type="file"] { display: none; }
         
         .search-filter-zone { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; margin-top: 10px; }
-        .search-input { flex: 2; padding: 12px 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; outline: none; transition: border-color 0.2s; }
-        .search-input:focus { border-color: var(--primary); }
-        
-        .toggle-filter-btn { flex: 1; min-width: 160px; background-color: #f5f6f7; color: #4b4f56; border: 1px solid var(--border); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        .toggle-filter-btn.active { background-color: #e7f3ff; color: var(--primary); border-color: var(--primary); }
-        .filter-select { padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); min-width: 180px; background-color: #fff; cursor: pointer; font-weight: bold; outline: none; }
+        .search-input { flex: 2; padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid #ccd0d5; box-sizing: border-box; }
+        .toggle-filter-btn { flex: 1; min-width: 160px; background-color: #f5f6f7; color: #4b4f56; border: 1px solid #ccd0d5; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .toggle-filter-btn.active { background-color: #e7f3ff; color: #1877f2; border-color: #1877f2; }
+        .filter-select { padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid #ccd0d5; min-width: 180px; background-color: #fff; cursor: pointer; font-weight: bold; }
 
         /* מד התקדמות */
         .progress-container { background-color: #e4e6eb; border-radius: 10px; height: 18px; width: 100%; margin: 15px 0; overflow: hidden; position: relative; }
-        .progress-bar { background: linear-gradient(90deg, var(--success), #4db8ff); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-bar { background: linear-gradient(90deg, #00a400, #4db8ff); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 12px; font-weight: bold; color: #333; line-height: 18px; }
 
         .stats-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-card { flex: 1; min-width: 120px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; border: 1px solid rgba(0,0,0,0.02); }
-        .stat-card h3 { margin: 0; color: var(--text-muted); font-size: 13px; }
-        .stat-card .number { font-size: 26px; font-weight: bold; margin: 8px 0 0 0; color: var(--primary); }
+        .stat-card { flex: 1; min-width: 120px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .stat-card h3 { margin: 0; color: #65676b; font-size: 13px; }
+        .stat-card .number { font-size: 24px; font-weight: bold; margin: 8px 0 0 0; color: #1877f2; }
 
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
-        .card h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: var(--text-main); }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; }
 
         table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 10px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
-        th { background-color: #f8f9fa; color: var(--text-muted); font-weight: 600; }
+        th { background-color: #f8f9fa; color: #65676b; font-weight: 600; }
 
         /* שורות בטבלה */
         tr.voter-row-item { cursor: pointer; transition: background-color 0.15s; }
@@ -143,46 +68,32 @@
             to { background-color: #fff3bf; }
         }
         
-        .voted-badge { background-color: #e7f3ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .not-voted-badge { background-color: #f5f6f7; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .reminder-badge { background-color: #fff3bf; color: var(--warning); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .reminder-badge { background-color: #fff3bf; color: #f59f00; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
 
+        .admin-only { display: block; }
+        body.user-view .admin-only { display: none !important; }
         .chart-container { position: relative; height: 220px; width: 100%; margin: 15px auto; }
 
         /* חלון מודאל (פופ-אפ לבוחר) */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-content { background-color: #fff; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; position: relative; }
-        .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
-        .modal h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: var(--text-main); font-size: 20px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background-color: #fff; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease-out; position: relative; }
+        .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #65676b; }
+        .modal h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; font-size: 20px; }
         .voter-info-block { background: #f7f8fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
         .modal-btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .modal-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background-color 0.2s; }
-        .btn-call { background-color: var(--success); color: white; }
-        .btn-call:hover { background-color: var(--success-hover); }
-        .btn-voted { background-color: var(--primary); color: white; }
-        .btn-voted:hover { background-color: var(--primary-hover); }
+        .modal-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-call { background-color: #00a400; color: white; }
+        .btn-voted { background-color: #1877f2; color: white; }
         .btn-unvoted { background-color: #e4e6eb; color: #4b4f56; }
-        .btn-unvoted:hover { background-color: #ccd0d5; }
-        .btn-drive { background-color: #2196F3; color: white; }
-        .btn-drive:hover { background-color: #1976D2; }
-        .btn-remind { background-color: var(--warning); color: white; }
-        .btn-remind:hover { background-color: #e08f00; }
-        .btn-save-all { background-color: #2e7d32; color: white; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-save-all:hover { background-color: #1b5e20; }
+        .btn-drive { background-color: #ff9800; color: white; }
+        .btn-remind { background-color: #f59f00; color: white; }
         
-        .modal-label { font-weight: bold; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; display: block; }
-        .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; outline: none; }
-        .modal-textarea:focus { border-color: var(--primary); }
+        .modal-label { font-weight: bold; font-size: 13px; color: #65676b; margin-bottom: 5px; display: block; }
+        .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccd0d5; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
+        .modal-textarea:focus { border-color: #1877f2; outline: none; }
 
-        /* מערכת טוסטים והודעות צצות (Toasts) */
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1001; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background-color: #323232; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; min-width: 200px; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards; }
-        .toast.toast-success { border-right: 4px solid var(--success); }
-        .toast.toast-danger { border-right: 4px solid var(--danger); }
-        .toast.toast-warning { border-right: 4px solid var(--warning); }
-
-        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -190,17 +101,14 @@
 </head>
 <body>
 
-<!-- מערכת טוסטים גלובלית -->
-<div id="toast-container"></div>
-
 <!-- מסך כניסה מאובטח -->
 <div id="login-screen">
-    <h2>🔒 מערכת חמ"ל מאובטחת</h2>
+    <h2>🔒 מערכת חמ"ל סגורה</h2>
     <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
     <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
     <br>
-    <button class="btn btn-primary" id="login-btn" style="width: 80%; justify-content: center; font-size: 16px;">התחבר למערכת</button>
-    <p id="login-error" style="color: var(--danger); font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
+    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">התחבר למערכת</button>
+    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
 </div>
 
 <!-- הדשבורד הראשי -->
@@ -208,11 +116,11 @@
     
     <!-- שעון ספירה לאחור מרכזי ובולט -->
     <div class="countdown-wrapper">
-        <button id="toggle-settings-btn" class="settings-toggle-btn" style="display: none;" title="הגדרת שעת נעילה">⚙️</button>
+        <button id="toggle-settings-btn" class="settings-toggle-btn admin-only" title="הגדרת שעת נעילה">⚙️</button>
         <div class="countdown-title">⏱️ הזמן הנותר לסגירת הקלפיות</div>
         <div class="countdown-clock" id="countdown-display">00:00:00</div>
         
-        <div class="countdown-settings" id="timer-settings-box">
+        <div class="countdown-settings admin-only" id="timer-settings-box">
             <label for="close-time-picker">🕒 <strong>שעת נעילה חדשה:</strong></label>
             <input type="time" id="close-time-picker" value="22:00">
         </div>
@@ -220,30 +128,30 @@
 
     <div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div>
-            <h1 style="margin: 0; color: var(--text-main);" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
-            <p style="margin: 5px 0 0 0; color: var(--text-muted);" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+            <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
+            <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
         </div>
-        <div id="admin-header-actions" style="margin-top: 10px; display: none;">
-            <button class="btn btn-success" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
+        <div class="admin-only" style="margin-top: 10px;">
+            <button class="whatsapp-report-btn" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
         </div>
     </div>
 
     <div style="max-width: 1400px; margin: auto;" id="control-panel-container">
         <div class="control-panel">
-            <div class="upload-zone" id="admin-upload-zone" style="display: none;">
-                <label class="btn btn-primary">
+            <div class="upload-zone admin-only">
+                <label class="upload-btn">
                     📁 טען קובץ בוחרים (CSV)
                     <input type="file" id="csv-file-input" accept=".csv">
                 </label>
-                <button class="btn btn-danger" id="delete-all-btn">🗑️ מחק פנקס בוחרים</button>
-                <span id="upload-status" style="font-weight: bold; color: var(--success);"></span>
+                <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק פנקס בוחרים</button>
+                <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
             </div>
             
             <div class="search-filter-zone">
                 <input type="text" id="search-bar" class="search-input" placeholder="🔍 חפש לפי שם, כתובת, מסד או טלפון...">
                 <button id="unvoted-toggle" class="toggle-filter-btn">📞 הצג רק מי שטרם הצביע</button>
                 
-                <div id="filter-wrapper" style="display: none;">
+                <div class="admin-only" id="filter-wrapper">
                     <select id="manager-filter" class="filter-select">
                         <option value="all">🌍 כל האחראים</option>
                     </select>
@@ -272,9 +180,9 @@
                     <h3>סה"כ בוחרים</h3>
                     <div class="number" id="total-voters">0</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card highlight">
                     <h3>סה"כ הצביעו</h3>
-                    <div class="number" id="total-voted" style="color: var(--success);">0</div>
+                    <div class="number" id="total-voted">0</div>
                 </div>
                 <div class="stat-card">
                     <h3>אחוז הצבעה</h3>
@@ -287,11 +195,12 @@
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
-                            <tr id="voters-table-header">
+                            <tr>
                                 <th>מסד</th>
                                 <th>שם מלא</th>
                                 <th>כתובת</th>
                                 <th>טלפון</th>
+                                <th class="admin-only">אחראי</th>
                                 <th>הערות אחרונות</th>
                                 <th>סטטוס</th>
                             </tr>
@@ -312,7 +221,7 @@
                 </div>
             </div>
 
-            <div class="card" id="side-panel-container" style="display: none;">
+            <div class="card admin-only" id="side-panel-container">
                 <h2>👔 סיכום הספקי אחראים</h2>
                 <div class="chart-container" style="height: 200px; margin-bottom: 15px;">
                     <canvas id="managersBarChart"></canvas>
@@ -334,19 +243,7 @@
     </div>
 </div>
 
-<!-- חלון מודאל מותאם לאישור מחיקה מורחב -->
-<div id="confirm-modal" class="modal">
-    <div class="modal-content" style="max-width: 400px; text-align: center;">
-        <h3 style="color: var(--danger); border: none;">⚠️ אזהרת אבטחה חמורה</h3>
-        <p>האם אתה בטוח שברצונך למחוק את כל פנקס הבוחרים מהמערכת לצמיתות? לא ניתן לבטל פעולה זו.</p>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="modal-btn btn-danger" id="confirm-delete-yes" style="flex: 1;">כן, מחק הכל</button>
-            <button class="modal-btn btn-unvoted" id="confirm-delete-no" style="flex: 1;">ביטול</button>
-        </div>
-    </div>
-</div>
-
-<!-- חלון כרטיס בוחר חכם (Modal) -->
+<!-- חלון כרטיס בוחר חכם (Modal) - שדה מסד הוסר מכאן -->
 <div id="voter-modal" class="modal">
     <div class="modal-content">
         <span class="close-modal" id="close-modal-btn">&times;</span>
@@ -364,15 +261,14 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ הגדר תזכורת לעוד שעה</button>
+            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ תזכורת (חזור אליו)</button>
             <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
         </div>
 
-        <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
-        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
+        <span class="modal-label">✏️ הערות ועדכוני סטטוס (נשמר אוטומטית):</span>
+        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה, צריך לברר לגבי המשפחה..."></textarea>
         
-        <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
-        <div id="modal-save-status" style="font-size: 13px; color: var(--success); text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
+        <div id="modal-save-status" style="font-size: 12px; color: #00a400; text-align: left; font-weight: bold; margin-top: -10px; height: 15px;"></div>
     </div>
 </div>
 
@@ -392,22 +288,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // מפתח מוצפן באופן בסיסי כדי למנוע קריאה ישירה של קודים מתוך ה-DevTools
-    const USERS_HASH = {
-        "1f10c9aa": { name: "מנהל", role: "admin" }, // קוד: 1111
-        "a9ec2b11": { name: "אבי", role: "user" },   // קוד: 2222
-        "82cc1214": { name: "ירון", role: "user" }   // קוד: 3333
+    const USERS_DB = {
+        "1111": { name: "מנהל", role: "admin" },
+        "2222": { name: "אבי", role: "user" },
+        "3333": { name: "ירון", role: "user" }
     };
-
-    // פונקציה פשוטה לייצור Hash לצורך הגנת ה-Client-Side של מסך הכניסה
-    function simpleHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (hash << 5) - hash + str.charCodeAt(i);
-            hash |= 0;
-        }
-        return Math.abs(hash).toString(16);
-    }
 
     let sessionUser = null;
     let allVotersGlobal = [];
@@ -415,71 +300,21 @@
     let targetTime = "22:00";
     let countdownInterval = null;
     let activeVoter = null; 
-    let tempReminderTime = null;
 
     let pieChartInstance = null;
     let barChartInstance = null;
-
-    // Toast Generator
-    function showToast(message, type = "info") {
-        const container = document.getElementById("toast-container");
-        const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
-        
-        let icon = "ℹ️";
-        if (type === "success") icon = "✅";
-        if (type === "danger") icon = "❌";
-        if (type === "warning") icon = "⏰";
-
-        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-        container.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
 
     document.getElementById("login-btn").addEventListener("click", checkLogin);
     document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
 
     function checkLogin() {
         const code = document.getElementById("pass-input").value.trim();
-        const computedHash = simpleHash(code);
-        
-        if (USERS_HASH[computedHash]) {
-            sessionUser = USERS_HASH[computedHash];
+        if (USERS_DB[code]) {
+            sessionUser = USERS_DB[code];
             sessionUser.token = code;
             startDashboard();
-            showToast(`ברוך הבא, ${sessionUser.name}!`, "success");
         } else {
             document.getElementById("login-error").style.display = "block";
-            showToast("קוד גישה שגוי. נסה שוב.", "danger");
-        }
-    }
-
-    function applySecurityPolicy() {
-        if (sessionUser.role === "admin") {
-            // טעינת רכיבי ניהול פיזית לתוך הדף רק אם המשתמש הוא אכן מנהל
-            document.getElementById("toggle-settings-btn").style.display = "block";
-            document.getElementById("admin-header-actions").style.display = "block";
-            document.getElementById("admin-upload-zone").style.display = "flex";
-            document.getElementById("filter-wrapper").style.display = "block";
-            document.getElementById("side-panel-container").style.display = "block";
-            
-            // הוספת עמודת אחראי לטבלה באופן דינמי
-            const headerRow = document.getElementById("voters-table-header");
-            if (headerRow && !document.getElementById("th-manager")) {
-                const th = document.createElement("th");
-                th.id = "th-manager";
-                th.textContent = "אחראי";
-                headerRow.insertBefore(th, headerRow.children[4]);
-            }
-        } else {
-            document.body.classList.add("user-view");
-            document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
-            document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - לחץ על שורה לפתיחת כרטיס בוחר`;
-            document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
-            document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
         }
     }
 
@@ -487,7 +322,16 @@
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("main-dashboard").style.display = "block";
 
-        applySecurityPolicy();
+        if (sessionUser.role !== "admin") {
+            document.body.classList.add("user-view");
+            document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
+            document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - לחץ על שורה לפתיחת כרטיס בוחר`;
+            document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
+            document.getElementById("control-panel-container").style.display = "block";
+            document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
+        } else {
+            document.getElementById("toggle-settings-btn").style.display = "block";
+        }
 
         onSnapshot(doc(db, "settings", "timer"), (docSnap) => {
             if (docSnap.exists() && docSnap.data().closeTime) {
@@ -497,6 +341,7 @@
             startCountdown();
         });
 
+        // האזנה קבועה לבוחרים
         onSnapshot(collection(db, "voters"), (snapshot) => {
             const voters = [];
             snapshot.forEach(doc => {
@@ -508,20 +353,18 @@
             }
             renderDashboard();
 
+            // עדכון דינמי של הנתונים בחלון הפתוח ללא הפרעה להקלדה
             if (activeVoter) {
                 const updated = voters.find(v => v.id === activeVoter.id);
                 if (updated) {
-                    activeVoter.hasVoted = updated.hasVoted;
-                    refreshModalVoteButton();
+                    activeVoter = updated;
+                    refreshModalData();
                 }
             }
-        }, (error) => {
-            console.error("Firebase listen error:", error);
-            showToast("שגיאה בסנכרון הנתונים בזמן אמת.", "danger");
         });
 
-        // הרצת בדיקת תזכורות ממוקדת פעם בדקה
-        setInterval(checkActiveReminders, 60000);
+        // בדיקה קבועה בכל 30 שניות עבור תזכורות שפג תוקפן
+        setInterval(checkActiveReminders, 30000);
     }
 
     document.getElementById("toggle-settings-btn").addEventListener("click", () => {
@@ -554,13 +397,8 @@
 
     document.getElementById("close-time-picker").addEventListener("change", async (e) => {
         if (sessionUser.role !== "admin") return;
-        try {
-            await setDoc(doc(db, "settings", "timer"), { closeTime: e.target.value }, { merge: true });
-            showToast("שעת סגירת הקלפיות עודכנה בהצלחה!", "success");
-            setTimeout(() => { document.getElementById("timer-settings-box").style.display = "none"; }, 1500);
-        } catch (err) {
-            showToast("כשל בעדכון שעת הנעילה.", "danger");
-        }
+        await setDoc(doc(db, "settings", "timer"), { closeTime: e.target.value }, { merge: true });
+        setTimeout(() => { document.getElementById("timer-settings-box").style.display = "none"; }, 1500);
     });
 
     document.getElementById("unvoted-toggle").addEventListener("click", function() {
@@ -573,7 +411,6 @@
 
     function updateFilterDropdown(voters) {
         const filterSelect = document.getElementById("manager-filter");
-        if (!filterSelect) return;
         const currentSelection = filterSelect.value;
         const managers = new Set();
         voters.forEach(v => { if(v.manager) managers.add(v.manager); });
@@ -618,55 +455,31 @@
         });
 
         const reportText = `📢 *עדכון חמ"ל בחירות נכון לשעה ${currentTime}* 📢\n\n🎯 *אחוז הצבעה כללי:* ${percentage}%\n✅ *הצביעו:* ${totalVoted} מתוך ${totalVoters}\n\n📊 *הספקי אחראים בשטח:*${managerStatsText}\n\nשעון סגירת הקלפי סופר לאחור ל- *${targetTime}*! קדימה להגביר לחץ! 🚀`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(reportText)}`, '_blank');
+        const encodedText = encodeURIComponent(reportText);
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
     });
 
-    // שימוש במודאל אישור מעוצב במקום Confirm()
-    const confirmModal = document.getElementById("confirm-modal");
-    document.getElementById("delete-all-btn").addEventListener("click", () => {
+    document.getElementById("delete-all-btn").addEventListener("click", async function() {
         if (sessionUser.role !== "admin") return;
-        confirmModal.style.display = "flex";
-    });
-
-    document.getElementById("confirm-delete-no").addEventListener("click", () => {
-        confirmModal.style.display = "none";
-    });
-
-    document.getElementById("confirm-delete-yes").addEventListener("click", async () => {
-        confirmModal.style.display = "none";
-        const deleteBtn = document.getElementById("delete-all-btn");
-        deleteBtn.disabled = true;
-        deleteBtn.textContent = "⌛ מוחק...";
-        
+        if (!confirm("האם למחוק את כל נתוני הבוחרים לצמיתות?")) return;
         try {
             const querySnapshot = await getDocs(collection(db, "voters"));
             const batch = writeBatch(db);
             querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
             await batch.commit();
-            showToast("כל פנקס הבוחרים נמחק בהצלחה מהשרת.", "success");
-        } catch (error) { 
-            showToast("שגיאה במחיקת הנתונים.", "danger");
-        } finally {
-            deleteBtn.disabled = false;
-            deleteBtn.innerHTML = "🗑️ מחק פנקס בוחרים";
-        }
+            alert("כל נתוני הבוחרים נמחקו.");
+        } catch (error) { alert("שגיאה במחיקה!"); }
     });
 
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (!file || sessionUser.role !== "admin") return;
-        
-        const uploadStatus = document.getElementById("upload-status");
-        uploadStatus.textContent = "⌛ מעבד קובץ...";
-
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             complete: async function(results) {
                 const rows = results.data;
                 const batch = writeBatch(db);
-                let count = 0;
-
                 rows.forEach((row) => {
                     const firstName = row["שם פרטי"] || "";
                     const lastName = row["שם משפחה"] || "";
@@ -674,21 +487,13 @@
                     if (fullName) {
                         const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                         const masad = row["מסד"] || "";
-                        
-                        let address = "";
-                        if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
-                            address = row["כתובת"].trim();
-                        } else {
-                            const street = row["רחוב"] || "";
-                            const houseNum = row["מס בית"] || row["כתובת"] || "";
-                            const city = row["עיר"] || "";
-                            address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
-                            if (address === ",") address = "";
-                        }
-
+                        const street = row["רחוב"] || "";
+                        const houseNum = row["מס בית"] || "";
+                        const city = row["עיר"] || "";
+                        const address = `${street} ${houseNum}, ${city}`.trim();
                         const phone = row["טלפון"] || row["נייד"] || "";
+
                         const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
-                        
                         batch.set(doc(db, "voters", voterId), {
                             masad: masad,
                             name: fullName,
@@ -700,19 +505,10 @@
                             hasVoted: false,
                             reminderTime: null
                         }, { merge: true });
-                        count++;
                     }
                 });
-
-                try {
-                    await batch.commit();
-                    showToast(`נטענו ${count} בוחרים חדשים למערכת!`, "success");
-                } catch (err) {
-                    showToast("שגיאה בשמירת נתוני ה-CSV בשרת.", "danger");
-                } finally {
-                    uploadStatus.textContent = "";
-                    e.target.value = "";
-                }
+                await batch.commit();
+                alert("הקובץ נטען בהצלחה!");
             }
         });
     });
@@ -781,6 +577,7 @@
             row.classList.add("voter-row-item");
             if (v.hasVoted) row.classList.add("voted-row");
             
+            // סימון יציב לשורה עם תזכורת פעילה (מסתמך על הערך שנמשך מ-Firebase)
             if (v.reminderTime && !v.hasVoted) {
                 row.classList.add("reminder-row");
             }
@@ -805,12 +602,11 @@
         });
     }
 
+    /* --- מערכת חלון כרטיס בוחר חכם (Modal) --- */
     const modal = document.getElementById("voter-modal");
     
     function openVoterModal(voter) {
         activeVoter = voter;
-        tempReminderTime = voter.reminderTime || null;
-        
         modal.style.display = "flex";
         
         document.getElementById("modal-voter-name").textContent = voter.name;
@@ -820,13 +616,17 @@
         
         const notesInput = document.getElementById("modal-notes-input");
         notesInput.value = voter.notes || '';
-        
         document.getElementById("modal-save-status").textContent = "";
 
-        refreshModalVoteButton();
+        notesInput.oninput = null;
+        notesInput.oninput = (e) => {
+            debouncedSaveNotes(activeVoter.id, e.target.value);
+        };
+
+        refreshModalData();
     }
 
-    function refreshModalVoteButton() {
+    function refreshModalData() {
         const toggleVoteBtn = document.getElementById("modal-btn-toggle-vote");
         if (activeVoter.hasVoted) {
             toggleVoteBtn.textContent = "↩️ בטל סימון הצבעה";
@@ -840,89 +640,66 @@
     document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
     window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
 
+    // כפתור חיוג מהיר
     document.getElementById("modal-btn-call").addEventListener("click", () => {
         if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
     });
 
+    // שינוי סטטוס הצבעה
     document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
         if (!activeVoter) return;
         const nextStatus = !activeVoter.hasVoted;
-        try {
-            await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
-            showToast(`סטטוס ההצבעה של ${activeVoter.name} עודכן בהצלחה!`, "success");
-        } catch (err) {
-            showToast("שגיאה בעדכון הסטטוס בשרת.", "danger");
-        }
+        await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
-    document.getElementById("modal-btn-remind").addEventListener("click", () => {
+    let saveTimeout = null;
+    function debouncedSaveNotes(voterId, text) {
+        document.getElementById("modal-save-status").textContent = "📝 מקליד...";
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(async () => {
+            await updateDoc(doc(db, "voters", voterId), { notes: text });
+            document.getElementById("modal-save-status").textContent = "💾 נשמר בהצלחה!";
+        }, 800);
+    }
+
+    // תזכורת (חזור אליו) - תיקון: השמירה נשלחת ישירות ל-Firebase כדי שהצבע הצהוב יהיה קבוע ולא יימחק
+    document.getElementById("modal-btn-remind").addEventListener("click", async () => {
         if (!activeVoter) return;
-        
         const now = new Date();
-        const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
-        const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
+        const reminderTimestamp = now.getTime() + (60 * 60 * 1000); 
+        const updatedNotes = (activeVoter.notes ? activeVoter.notes + " | " : "") + "הגדיר תזכורת לחזור אליו עוד שעה";
         
-        tempReminderTime = futureTime.getTime();
-
-        const notesInput = document.getElementById("modal-notes-input");
-        let currentText = notesInput.value.trim();
-        const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
+        await updateDoc(doc(db, "voters", activeVoter.id), { 
+            reminderTime: reminderTimestamp,
+            notes: updatedNotes
+        });
         
-        if (currentText && !currentText.includes("תזכורת:")) {
-            notesInput.value = currentText + "\n" + reminderText;
-        } else if (!currentText.includes("תזכורת:")) {
-            notesInput.value = reminderText;
-        }
-        
-        document.getElementById("modal-save-status").style.color = "var(--warning)";
-        document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
+        alert(`הוגדרה תזכורת עבור ${activeVoter.name}. השורה כעת צבועה בצהוב ותישאר כך!`);
+        modal.style.display = "none";
+        activeVoter = null;
     });
 
-    document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
-        if (!activeVoter) return;
-        
-        const saveStatus = document.getElementById("modal-save-status");
-        saveStatus.style.color = "var(--primary)";
-        saveStatus.textContent = "💾 שומר נתונים בשרת...";
-
-        const notesInput = document.getElementById("modal-notes-input");
-        
-        try {
-            await updateDoc(doc(db, "voters", activeVoter.id), {
-                notes: notesInput.value,
-                reminderTime: tempReminderTime
-            });
-            
-            showToast("השינויים נשמרו בהצלחה!", "success");
-            modal.style.display = "none";
-            activeVoter = null;
-        } catch (error) {
-            console.error("Error saving voter:", error);
-            showToast("שגיאה בשמירת השינויים.", "danger");
-        }
-    });
-
+    // שלח לאחראי הסעות - תיקון: פתיחת וואטסאפ ישירה ללא פופ-אפ מתווך מציק במערכת
     document.getElementById("modal-btn-drive").addEventListener("click", () => {
         if (!activeVoter) return;
+        
         const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
+        
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
     });
 
-    // שיפור מנגנון התזכורות - בדיקת המערכים שנשמרו בזיכרון מקומי בלבד למניעת עומס
+    // בדיקת תזכורות שפג תוקפן
     function checkActiveReminders() {
         const currentTime = new Date().getTime();
         allVotersGlobal.forEach(async v => {
             if (v.reminderTime && currentTime >= v.reminderTime && !v.hasVoted) {
-                showToast(`הגיע הזמן להתקשר אל ${v.name}!`, "warning");
-                // ניקוי התזכורת בשרת לאחר שהופעלה
-                try {
-                    await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
-                } catch (err) {
-                    console.error("Error clearing reminder:", err);
-                }
+                alert(`⏰ תזכורת חמ"ל: הגיע הזמן לחזור אל ${v.name} (טלפון: ${v.phone})!`);
+                await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
             }
         });
     }
+
+    /* --- סוף מערכת מודאל --- */
 
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
