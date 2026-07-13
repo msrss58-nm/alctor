@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -493,10 +493,22 @@
                     if (fullName) {
                         const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                         const masad = row["מסד"] || "";
-                        const street = row["רחוב"] || "";
-                        const houseNum = row["מס בית"] || "";
-                        const city = row["עיר"] || "";
-                        const address = `${street} ${houseNum}, ${city}`.trim();
+                        
+                        // קורא את הכתובת בצורה גמישה וחכמה במיוחד!
+                        let address = "";
+                        
+                        // בודק אם "כתובת" היא עמודה עצמאית שמכילה טקסט ולא רק מספר בית בודד
+                        if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
+                            address = row["כתובת"].trim();
+                        } else {
+                            // אם אין, או שזה רק מספר, מחבר רחוב + מס בית (הקודם או החדש שנקרא "כתובת") + עיר
+                            const street = row["רחוב"] || "";
+                            const houseNum = row["מס בית"] || row["כתובת"] || "";
+                            const city = row["עיר"] || "";
+                            address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
+                            if (address === ",") address = ""; // מניעת פסיק ריק אם הכל ריק
+                        }
+
                         const phone = row["טלפון"] || row["נייד"] || "";
 
                         const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
