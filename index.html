@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות - מערכת שליטה וחיוג מהיר</title>
+    <title>חמ"ל בחירות מאובטח</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
         .main-panel { flex: 3; min-width: 300px; }
         .side-panel { flex: 1; min-width: 300px; }
         
+        /* מסך נעילה */
+        #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        .login-input { width: 80%; padding: 12px; font-size: 18px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; letter-spacing: 5px; }
+        
+        #main-dashboard { display: none; }
+        
         /* פאנל בקרה */
         .control-panel { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .upload-zone { text-align: right; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .upload-btn { background-color: #1877f2; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
         .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
-        .delete-all-btn:hover { background-color: #d21f3d; }
         .upload-zone input[type="file"] { display: none; }
         
         .filter-zone { text-align: right; display: flex; align-items: center; gap: 10px; }
         .filter-select { padding: 10px 15px; font-size: 16px; border-radius: 6px; border: 1px solid #ccd0d5; min-width: 200px; background-color: #fff; cursor: pointer; font-weight: bold; }
 
-        /* כרטיסיות סטטיסטיקה */
         .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
         .stat-card h3 { margin: 0; color: #65676b; font-size: 14px; }
@@ -35,19 +39,15 @@
         th, td { padding: 12px 15px; border-bottom: 1px solid #f0f2f5; font-size: 14px; }
         th { background-color: #f8f9fa; color: #65676b; font-weight: 600; }
 
-        /* עיצוב שורות וחיוג */
         tr.voted-row { background-color: #f9fafb; color: #8d949e; text-decoration: line-through; }
-        tr.voted-row td button { text-decoration: none; }
-        
-        .clickable-phone-cell { cursor: pointer; position: relative; }
+        .clickable-phone-cell { cursor: pointer; }
         tr:not(.voted-row) .clickable-phone-cell:hover { background-color: #e7f3ff; color: #1877f2; }
         
         .btn { background-color: #1877f2; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn.btn-cancel { background-color: #e4e6eb; color: #4b4f56; }
-        .btn.btn-cancel:hover { background-color: #d8dadf; }
         
-        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; display: inline-block; }
-        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
         
         .admin-only { display: block; }
         body.user-view .admin-only { display: none !important; }
@@ -56,98 +56,107 @@
 </head>
 <body>
 
-<div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right;">
-    <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
-    <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+<!-- מסך כניסה מאובטח -->
+<div id="login-screen">
+    <h2>🔒 מערכת חמ"ל סגורה</h2>
+    <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
+    <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
+    <br>
+    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px;">התחבר למערכת</button>
+    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
 </div>
 
-<!-- פאנל בקרה -->
-<div style="max-width: 1400px; margin: auto;" id="control-panel-container">
-    <div class="control-panel">
-        <div class="upload-zone admin-only">
-            <label class="upload-btn">
-                📁 טען קובץ בוחרים (CSV)
-                <input type="file" id="csv-file-input" accept=".csv">
-            </label>
-            <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק את כל פנקס הבוחרים הנוכחי</button>
-            <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
-        </div>
-        
-        <div class="filter-zone" id="filter-wrapper">
-            <label for="manager-filter">🔍 <strong>הצג לפי אחראי:</strong></label>
-            <select id="manager-filter" class="filter-select">
-                <option value="all">🌍 כל האחראים (מבט מנהל)</option>
-            </select>
+<!-- הדשבורד הראשי (מוסתר כברירת מחדל) -->
+<div id="main-dashboard">
+    <div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right;">
+        <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
+        <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+    </div>
+
+    <div style="max-width: 1400px; margin: auto;" id="control-panel-container">
+        <div class="control-panel">
+            <div class="upload-zone admin-only">
+                <label class="upload-btn">
+                    📁 טען קובץ בוחרים (CSV)
+                    <input type="file" id="csv-file-input" accept=".csv">
+                </label>
+                <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק את כל פנקס הבוחרים</button>
+                <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
+            </div>
+            
+            <div class="filter-zone" id="filter-wrapper">
+                <label for="manager-filter">🔍 <strong>הצג לפי אחראי:</strong></label>
+                <select id="manager-filter" class="filter-select">
+                    <option value="all">🌍 כל האחראים (מבט מנהל)</option>
+                </select>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="dashboard-grid">
-    <div class="main-panel">
-        <!-- מוני דשבורד -->
-        <div class="stats-container">
-            <div class="stat-card">
-                <h3>סה"כ בוחרים</h3>
-                <div class="number" id="total-voters">0</div>
+    <div class="dashboard-grid">
+        <div class="main-panel">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>סה"כ בוחרים</h3>
+                    <div class="number" id="total-voters">0</div>
+                </div>
+                <div class="stat-card highlight">
+                    <h3>סה"כ הצביעו</h3>
+                    <div class="number" id="total-voted">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>אחוז הצבעה</h3>
+                    <div class="number" id="voting-percentage">0%</div>
+                </div>
             </div>
-            <div class="stat-card highlight">
-                <h3>סה"כ הצביעו</h3>
-                <div class="number" id="total-voted">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>אחוז הצבעה</h3>
-                <div class="number" id="voting-percentage">0%</div>
+
+            <div class="card">
+                <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
+                <p style="font-size: 13px; color: #65676b; margin-top: -5px; margin-bottom: 15px;">💡 ניתן ללחוץ על פרטי הבוחר (שם/כתובת) כדי להתקשר אליו ישירות מהנייד!</p>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>מסד</th>
+                                <th>שם מלא</th>
+                                <th>כתובת מלאה</th>
+                                <th>טלפון</th>
+                                <th class="admin-only">אחראי משויך</th>
+                                <th>סטטוס</th>
+                                <th>פעולה</th>
+                            </tr>
+                        </thead>
+                        <tbody id="voters-table-body">
+                            <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- פנקס הבוחרים -->
-        <div class="card">
-            <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
-            <p style="font-size: 13px; color: #65676b; margin-top: -5px; margin-bottom: 15px;" id="click-tip">💡 ניתן ללחוץ על פרטי הבוחר (שם/כתובת) כדי להתקשר אליו ישירות מהנייד!</p>
-            <div style="overflow-x: auto;">
+        <div class="side-panel admin-only" id="side-panel-container">
+            <div class="card">
+                <h2>👔 סיכום הספקי אחראים</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>מסד</th>
-                            <th>שם מלא</th>
-                            <th>כתובת מלאה</th>
-                            <th>טלפון</th>
-                            <th class="admin-only">אחראי משויך</th>
-                            <th>סטטוס</th>
-                            <th>פעולה</th>
+                            <th>אחראי</th>
+                            <th>בוחרים</th>
+                            <th>הצביעו</th>
                         </tr>
                     </thead>
-                    <tbody id="voters-table-body">
-                        <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
+                    <tbody id="managers-table-body">
+                        <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-    <!-- פאנל צדי -->
-    <div class="side-panel admin-only" id="side-panel-container">
-        <div class="card">
-            <h2>👔 סיכום הספקי אחראים</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>אחראי</th>
-                        <th>בוחרים</th>
-                        <th>הצביעו</th>
-                    </tr>
-                </thead>
-                <tbody id="managers-table-body">
-                    <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -161,33 +170,56 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let allVotersGlobal = [];
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentUser = urlParams.get('user');
+    // הגדרת משתמשים וקודים סודיים (תוכל לשנות פה את המספרים למה שתרצה)
+    const USERS_DB = {
+        "1111": { name: "מנהל", role: "admin" },
+        "2222": { name: "אבי", role: "user" },
+        "3333": { name: "ירון", role: "user" }
+    };
 
-    if (currentUser) {
-        document.body.classList.add("user-view");
-        document.getElementById("main-title").textContent = `שלום ${currentUser} 👋`;
-        document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - חיוג מהיר ועדכון בשטח`;
-        document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
-        document.getElementById("filter-wrapper").style.display = "none";
-        if(!document.getElementById("csv-file-input").files.length) {
-            document.getElementById("control-panel-container").style.display = "none";
+    let sessionUser = null;
+    let allVotersGlobal = [];
+
+    document.getElementById("login-btn").addEventListener("click", checkLogin);
+    document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
+
+    function checkLogin() {
+        const code = document.getElementById("pass-input").value.trim();
+        if (USERS_DB[code]) {
+            sessionUser = USERS_DB[code];
+            sessionUser.token = code; // משמש כסיסמה לאימות מול השרת
+            startDashboard();
+        } else {
+            document.getElementById("login-error").style.display = "block";
         }
     }
 
-    onSnapshot(collection(db, "voters"), (snapshot) => {
-        const voters = [];
-        snapshot.forEach(doc => {
-            voters.push({ id: doc.id, ...doc.data() });
-        });
-        allVotersGlobal = voters;
-        if (!currentUser) {
-            updateFilterDropdown(voters);
+    function startDashboard() {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("main-dashboard").style.display = "block";
+
+        if (sessionUser.role !== "admin") {
+            document.body.classList.add("user-view");
+            document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
+            document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - חיוג מהיר ומאובטח`;
+            document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
+            document.getElementById("filter-wrapper").style.display = "none";
+            document.getElementById("control-panel-container").style.display = "none";
         }
-        renderDashboard();
-    });
+
+        // האזנה לנתונים
+        onSnapshot(collection(db, "voters"), (snapshot) => {
+            const voters = [];
+            snapshot.forEach(doc => {
+                voters.push({ id: doc.id, ...doc.data() });
+            });
+            allVotersGlobal = voters;
+            if (sessionUser.role === "admin") {
+                updateFilterDropdown(voters);
+            }
+            renderDashboard();
+        });
+    }
 
     function updateFilterDropdown(voters) {
         const filterSelect = document.getElementById("manager-filter");
@@ -207,45 +239,28 @@
         }
     }
 
-    if (!currentUser) {
+    if (document.getElementById("manager-filter")) {
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    // מנגנון מחיקה מלאה של כל המסמכים בשרת
-    if (!currentUser) {
-        document.getElementById("delete-all-btn").addEventListener("click", async function() {
-            const confirmDelete = confirm("⚠️ אזהרה חמורה!\nהאם אתה בטוח לחלוטין שברצונך למחוק את כל הבוחרים הנוכחיים מהמערכת?\nפעולה זו תאפס את הדשבורד לחלוטין ולא ניתן לבטל אותה.");
-            if (!confirmDelete) return;
+    // מחיקה מלאה
+    document.getElementById("delete-all-btn").addEventListener("click", async function() {
+        if (sessionUser.role !== "admin") return;
+        const confirmDelete = confirm("האם למחוק הכל?");
+        if (!confirmDelete) return;
 
-            document.getElementById("upload-status").style.color = "#333";
-            document.getElementById("upload-status").textContent = "מוחק נתונים מהשרת...";
+        try {
+            const querySnapshot = await getDocs(collection(db, "voters"));
+            const batch = writeBatch(db);
+            querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
+            await batch.commit();
+        } catch (error) { alert("שגיאת אבטחה: אין לך הרשאה בשרת!"); }
+    });
 
-            try {
-                const querySnapshot = await getDocs(collection(db, "voters"));
-                const batch = writeBatch(db);
-                
-                querySnapshot.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
-
-                await batch.commit();
-                document.getElementById("upload-status").style.color = "#00a400";
-                document.getElementById("upload-status").textContent = "🗑️ כל פנקס הבוחרים נמחק בהצלחה!";
-            } catch (error) {
-                console.error(error);
-                document.getElementById("upload-status").style.color = "#e74c3c";
-                document.getElementById("upload-status").textContent = "❌ תקלה בתהליך המחיקה.";
-            }
-        });
-    }
-
-    // קריאת CSV
+    // טעינת CSV
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
-        if (!file) return;
-
-        document.getElementById("upload-status").style.color = "#333";
-        document.getElementById("upload-status").textContent = "מעבד ומעלה...";
+        if (!file || sessionUser.role !== "admin") return;
 
         Papa.parse(file, {
             header: true,
@@ -276,37 +291,26 @@
                             name: fullName,
                             address: address,
                             manager: managerName,
-                            phone: phone.trim()
+                            phone: phone.trim(),
+                            secretPasscode: sessionUser.token // שולח את הקוד של המנהל כחלק מההעלאה לאימות בשרת
                         }, { merge: true });
                     }
                 });
-
-                try {
-                    await batch.commit();
-                    document.getElementById("upload-status").style.color = "#00a400";
-                    document.getElementById("upload-status").textContent = "✅ הפנקס החדש ומספרי הטלפון עודכנו בשרת!";
-                } catch (error) {
-                    document.getElementById("upload-status").style.color = "#e74c3c";
-                    document.getElementById("upload-status").textContent = "❌ תקלה בהעלאה.";
-                }
+                await batch.commit();
             }
         });
     });
 
     window.callVoter = function(phoneNumber, hasVoted) {
         if (hasVoted) return;
-        if (phoneNumber) {
-            window.location.href = `tel:${phoneNumber}`;
-        } else {
-            alert("לא הוזן מספר טלפון עבור בוחר זה בקובץ ה-CSV");
-        }
+        if (phoneNumber) window.location.href = `tel:${phoneNumber}`;
     };
 
     function renderDashboard() {
-        const activeFilter = currentUser ? currentUser : document.getElementById("manager-filter").value;
+        const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         
         const filteredVoters = allVotersGlobal.filter(v => {
-            if (activeFilter === "all") return true;
+            if (sessionUser.role === "admin" && activeFilter === "all") return true;
             return v.manager === activeFilter;
         });
 
@@ -318,7 +322,7 @@
         document.getElementById("total-voted").textContent = totalVoted;
         document.getElementById("voting-percentage").textContent = percentage + "%";
 
-        if (!currentUser) {
+        if (sessionUser.role === "admin") {
             const managersBody = document.getElementById("managers-table-body");
             managersBody.innerHTML = "";
             const managerStats = {};
@@ -332,7 +336,7 @@
 
             Object.keys(managerStats).sort().forEach(mName => {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td style="color:#00a400; font-weight:bold;">${managerStats[mName].voted}</td>`;
+                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td>${managerStats[mName].voted}</td>`;
                 managersBody.appendChild(row);
             });
         }
@@ -341,30 +345,25 @@
         votersBody.innerHTML = "";
 
         if(filteredVoters.length === 0) {
-            votersBody.innerHTML = `<tr><td colspan="${currentUser ? 6 : 7}" style="text-align:center;">אין בוחרים להצגה.</td></tr>`;
+            votersBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">אין בוחרים להצגה.</td></tr>`;
             return;
         }
 
         filteredVoters.sort((a, b) => Number(a.masad) - Number(b.masad)).forEach(v => {
             const row = document.createElement("tr");
-            if (v.hasVoted) {
-                row.classList.add("voted-row");
-            }
+            if (v.hasVoted) row.classList.add("voted-row");
 
             const statusBadge = v.hasVoted ? '<span class="voted-badge">✓ הצביע</span>' : '<span class="not-voted-badge">טרם הצביע</span>';
             const actionButton = v.hasVoted ? 
                 `<button class="btn btn-cancel" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', false)">↩️ ביטול</button>` : 
                 `<button class="btn" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', true)">👍 הצביע</button>`;
 
-            const displayPhone = v.phone || '<i>לא קיים</i>';
-            const hasVotedStatus = v.hasVoted ? 'true' : 'false';
-
             row.innerHTML = `
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.masad || '-'}</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})"><strong>${v.name}</strong> 📞</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.address || '-'}</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${displayPhone}</td>
-                ${currentUser ? '' : `<td><span style="color:#65676b;">${v.manager}</span></td>`}
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${v.hasVoted})">${v.masad || '-'}</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${v.hasVoted})"><strong>${v.name}</strong> 📞</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${v.hasVoted})">${v.address || '-'}</td>
+                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${v.hasVoted})">${v.phone || ''}</td>
+                ${sessionUser.role === 'admin' ? `<td>${v.manager}</td>` : ''}
                 <td>${statusBadge}</td>
                 <td>${actionButton}</td>
             `;
@@ -377,6 +376,5 @@
         await updateDoc(voterRef, { hasVoted: status });
     };
 </script>
-
 </body>
 </html>
