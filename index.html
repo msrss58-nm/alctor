@@ -1,153 +1,384 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות - מערכת שליטה וחיוג מהיר</title>
+    <title>חמ"ל בחירות מתקדם ומאובטח</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        :root {
+            --primary: #1877f2;
+            --primary-hover: #1565c0;
+            --success: #00a400;
+            --success-hover: #008700;
+            --danger: #f02849;
+            --danger-hover: #d11a37;
+            --warning: #f59f00;
+            --bg-main: #f0f2f5;
+            --bg-card: #ffffff;
+            --text-main: #1c1e21;
+            --text-muted: #65676b;
+            --border: #ccd0d5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; 
+            background-color: var(--bg-main); 
+            margin: 0; 
+            padding: 15px; 
+            color: var(--text-main); 
+            line-height: 1.5;
+        }
+
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
         .main-panel { flex: 3; min-width: 300px; }
-        .side-panel { flex: 1; min-width: 300px; }
+        .side-panel { flex: 1.2; min-width: 300px; }
         
-        /* פאנל בקרה */
-        .control-panel { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .upload-zone { text-align: right; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .upload-btn { background-color: #1877f2; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
-        .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; }
-        .delete-all-btn:hover { background-color: #d21f3d; }
+        /* מסך נעילה משודרג */
+        #login-screen { 
+            max-width: 400px; 
+            margin: 100px auto; 
+            background: var(--bg-card); 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+            text-align: center; 
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .login-input { 
+            width: 80%; 
+            padding: 14px; 
+            font-size: 20px; 
+            text-align: center; 
+            border-radius: 8px; 
+            border: 2px solid var(--border); 
+            margin-bottom: 20px; 
+            letter-spacing: 6px; 
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus { border-color: var(--primary); }
+        
+        #main-dashboard { display: none; }
+        
+        /* שעון ספירה לאחור */
+        .countdown-wrapper { 
+            position: relative; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover)); 
+            color: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            text-align: center; 
+            margin: 0 auto 20px auto; 
+            max-width: 1360px; 
+            box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); 
+        }
+        .countdown-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .countdown-clock { font-size: 42px; font-weight: 900; font-family: monospace; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        .settings-toggle-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: background 0.2s; }
+        .settings-toggle-btn:hover { background: rgba(255,255,255,0.35); }
+        .countdown-settings { display: none; margin-top: 15px; background: rgba(255,255,255,0.15); padding: 10px 15px; border-radius: 8px; align-items: center; gap: 10px; justify-content: center; }
+        .countdown-settings input[type="time"] { border: none; padding: 6px; border-radius: 6px; font-size: 14px; font-weight: bold; outline: none; }
+
+        /* פאנל בקרה מהיר */
+        .control-panel { background: var(--bg-card); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .upload-zone { text-align: right; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        
+        /* כפתורים כלליים */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-success { background-color: #25D366; color: white; }
+        .btn-success:hover { background-color: #20ba5a; }
+
         .upload-zone input[type="file"] { display: none; }
         
-        .filter-zone { text-align: right; display: flex; align-items: center; gap: 10px; }
-        .filter-select { padding: 10px 15px; font-size: 16px; border-radius: 6px; border: 1px solid #ccd0d5; min-width: 200px; background-color: #fff; cursor: pointer; font-weight: bold; }
+        .search-filter-zone { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; margin-top: 10px; }
+        .search-input { flex: 2; padding: 12px 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .search-input:focus { border-color: var(--primary); }
+        
+        .toggle-filter-btn { flex: 1; min-width: 160px; background-color: #f5f6f7; color: #4b4f56; border: 1px solid var(--border); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .toggle-filter-btn.active { background-color: #e7f3ff; color: var(--primary); border-color: var(--primary); }
+        .filter-select { padding: 10px 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); min-width: 180px; background-color: #fff; cursor: pointer; font-weight: bold; outline: none; }
 
-        /* כרטיסיות סטטיסטיקה */
-        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
-        .stat-card h3 { margin: 0; color: #65676b; font-size: 14px; }
-        .stat-card .number { font-size: 28px; font-weight: bold; margin: 10px 0 0 0; color: #1877f2; }
-        .stat-card.highlight .number { color: #00a400; }
+        /* מד התקדמות */
+        .progress-container { background-color: #e4e6eb; border-radius: 10px; height: 18px; width: 100%; margin: 15px 0; overflow: hidden; position: relative; }
+        .progress-bar { background: linear-gradient(90deg, var(--success), #4db8ff); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 12px; font-weight: bold; color: #333; line-height: 18px; }
 
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; }
+        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-card { flex: 1; min-width: 120px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; border: 1px solid rgba(0,0,0,0.02); }
+        .stat-card h3 { margin: 0; color: var(--text-muted); font-size: 13px; }
+        .stat-card .number { font-size: 26px; font-weight: bold; margin: 8px 0 0 0; color: var(--primary); }
+
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
+        .card h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: var(--text-main); }
 
         table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 10px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #f0f2f5; font-size: 14px; }
-        th { background-color: #f8f9fa; color: #65676b; font-weight: 600; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
+        th { background-color: #f8f9fa; color: var(--text-muted); font-weight: 600; }
 
-        /* עיצוב שורות וחיוג */
-        tr.voted-row { background-color: #f9fafb; color: #8d949e; text-decoration: line-through; }
-        tr.voted-row td button { text-decoration: none; }
+        /* שורות בטבלה */
+        tr.voter-row-item { cursor: pointer; transition: background-color 0.15s; }
+        tr.voter-row-item:hover { background-color: #f0f2f5; }
+        tr.voted-row { color: #8d949e; text-decoration: line-through; background-color: #f9fafb; }
+        tr.reminder-row { background-color: #fff9db !important; animation: pulse-yellow 2s infinite alternate; }
+
+        @keyframes pulse-yellow {
+            from { background-color: #fff9db; }
+            to { background-color: #fff3bf; }
+        }
         
-        .clickable-phone-cell { cursor: pointer; position: relative; }
-        tr:not(.voted-row) .clickable-phone-cell:hover { background-color: #e7f3ff; color: #1877f2; }
+        .voted-badge { background-color: #e7f3ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .not-voted-badge { background-color: #f5f6f7; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .reminder-badge { background-color: #fff3bf; color: var(--warning); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+
+        .chart-container { position: relative; height: 220px; width: 100%; margin: 15px auto; }
+
+        /* חלון מודאל (פופ-אפ לבוחר) */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-content { background-color: #fff; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; position: relative; }
+        .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
+        .modal h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: var(--text-main); font-size: 20px; }
+        .voter-info-block { background: #f7f8fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
+        .modal-btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .modal-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background-color 0.2s; }
+        .btn-call { background-color: var(--success); color: white; }
+        .btn-call:hover { background-color: var(--success-hover); }
+        .btn-voted { background-color: var(--primary); color: white; }
+        .btn-voted:hover { background-color: var(--primary-hover); }
+        .btn-unvoted { background-color: #e4e6eb; color: #4b4f56; }
+        .btn-unvoted:hover { background-color: #ccd0d5; }
+        .btn-drive { background-color: #2196F3; color: white; }
+        .btn-drive:hover { background-color: #1976D2; }
+        .btn-remind { background-color: var(--warning); color: white; }
+        .btn-remind:hover { background-color: #e08f00; }
+        .btn-save-all { background-color: #2e7d32; color: white; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-save-all:hover { background-color: #1b5e20; }
         
-        .btn { background-color: #1877f2; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn.btn-cancel { background-color: #e4e6eb; color: #4b4f56; }
-        .btn.btn-cancel:hover { background-color: #d8dadf; }
-        
-        .voted-badge { background-color: #e7f3ff; color: #1877f2; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; display: inline-block; }
-        .not-voted-badge { background-color: #f5f6f7; color: #65676b; padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
-        
-        .admin-only { display: block; }
-        body.user-view .admin-only { display: none !important; }
+        .modal-label { font-weight: bold; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; outline: none; }
+        .modal-textarea:focus { border-color: var(--primary); }
+
+        /* מערכת טוסטים והודעות צצות (Toasts) */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1001; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background-color: #323232; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; min-width: 200px; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards; }
+        .toast.toast-success { border-right: 4px solid var(--success); }
+        .toast.toast-danger { border-right: 4px solid var(--danger); }
+        .toast.toast-warning { border-right: 4px solid var(--warning); }
+
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right;">
-    <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
-    <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+<!-- מערכת טוסטים גלובלית -->
+<div id="toast-container"></div>
+
+<!-- מסך כניסה מאובטח -->
+<div id="login-screen">
+    <h2>🔒 מערכת חמ"ל מאובטחת</h2>
+    <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
+    <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
+    <br>
+    <button class="btn btn-primary" id="login-btn" style="width: 80%; justify-content: center; font-size: 16px;">התחבר למערכת</button>
+    <p id="login-error" style="color: var(--danger); font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
 </div>
 
-<!-- פאנל בקרה -->
-<div style="max-width: 1400px; margin: auto;" id="control-panel-container">
-    <div class="control-panel">
-        <div class="upload-zone admin-only">
-            <label class="upload-btn">
-                📁 טען קובץ בוחרים (CSV)
-                <input type="file" id="csv-file-input" accept=".csv">
-            </label>
-            <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק את כל פנקס הבוחרים הנוכחי</button>
-            <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
-        </div>
+<!-- הדשבורד הראשי -->
+<div id="main-dashboard">
+    
+    <!-- שעון ספירה לאחור מרכזי ובולט -->
+    <div class="countdown-wrapper">
+        <button id="toggle-settings-btn" class="settings-toggle-btn" style="display: none;" title="הגדרת שעת נעילה">⚙️</button>
+        <div class="countdown-title">⏱️ הזמן הנותר לסגירת הקלפיות</div>
+        <div class="countdown-clock" id="countdown-display">00:00:00</div>
         
-        <div class="filter-zone" id="filter-wrapper">
-            <label for="manager-filter">🔍 <strong>הצג לפי אחראי:</strong></label>
-            <select id="manager-filter" class="filter-select">
-                <option value="all">🌍 כל האחראים (מבט מנהל)</option>
-            </select>
+        <div class="countdown-settings" id="timer-settings-box">
+            <label for="close-time-picker">🕒 <strong>שעת נעילה חדשה:</strong></label>
+            <input type="time" id="close-time-picker" value="22:00">
         </div>
     </div>
-</div>
 
-<div class="dashboard-grid">
-    <div class="main-panel">
-        <!-- מוני דשבורד -->
-        <div class="stats-container">
-            <div class="stat-card">
-                <h3>סה"כ בוחרים</h3>
-                <div class="number" id="total-voters">0</div>
+    <div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <h1 style="margin: 0; color: var(--text-main);" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
+            <p style="margin: 5px 0 0 0; color: var(--text-muted);" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+        </div>
+        <div id="admin-header-actions" style="margin-top: 10px; display: none;">
+            <button class="btn btn-success" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
+        </div>
+    </div>
+
+    <div style="max-width: 1400px; margin: auto;" id="control-panel-container">
+        <div class="control-panel">
+            <div class="upload-zone" id="admin-upload-zone" style="display: none;">
+                <label class="btn btn-primary">
+                    📁 טען קובץ בוחרים (CSV)
+                    <input type="file" id="csv-file-input" accept=".csv">
+                </label>
+                <button class="btn btn-danger" id="delete-all-btn">🗑️ מחק פנקס בוחרים</button>
+                <span id="upload-status" style="font-weight: bold; color: var(--success);"></span>
             </div>
-            <div class="stat-card highlight">
-                <h3>סה"כ הצביעו</h3>
-                <div class="number" id="total-voted">0</div>
+            
+            <div class="search-filter-zone">
+                <input type="text" id="search-bar" class="search-input" placeholder="🔍 חפש לפי שם, כתובת, מסד או טלפון...">
+                <button id="unvoted-toggle" class="toggle-filter-btn">📞 הצג רק מי שטרם הצביע</button>
+                
+                <div id="filter-wrapper" style="display: none;">
+                    <select id="manager-filter" class="filter-select">
+                        <option value="all">🌍 כל האחראים</option>
+                    </select>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>אחוז הצבעה</h3>
-                <div class="number" id="voting-percentage">0%</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="main-panel">
+            
+            <!-- פס התקדמות ויזואלי -->
+            <div class="card" style="padding: 15px 20px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
+                    <span>📈 קצב התקדמות ההצבעות בחמ"ל</span>
+                    <span id="progress-percentage-label">0%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="voters-progress-bar"></div>
+                    <div class="progress-text" id="progress-bar-text">0 / 0 הצביעו</div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>סה"כ בוחרים</h3>
+                    <div class="number" id="total-voters">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>סה"כ הצביעו</h3>
+                    <div class="number" id="total-voted" style="color: var(--success);">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>אחוז הצבעה</h3>
+                    <div class="number" id="voting-percentage">0%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr id="voters-table-header">
+                                <th>מסד</th>
+                                <th>שם מלא</th>
+                                <th>כתובת</th>
+                                <th>טלפון</th>
+                                <th>הערות אחרונות</th>
+                                <th>סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody id="voters-table-body">
+                            <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- פנקס הבוחרים -->
-        <div class="card">
-            <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
-            <p style="font-size: 13px; color: #65676b; margin-top: -5px; margin-bottom: 15px;" id="click-tip">💡 ניתן ללחוץ על פרטי הבוחר (שם/כתובת) כדי להתקשר אליו ישירות מהנייד!</p>
-            <div style="overflow-x: auto;">
+        <div class="side-panel">
+            <div class="card">
+                <h2 id="chart-card-title">📊 יחס הצבעה</h2>
+                <div class="chart-container">
+                    <canvas id="votingPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card" id="side-panel-container" style="display: none;">
+                <h2>👔 סיכום הספקי אחראים</h2>
+                <div class="chart-container" style="height: 200px; margin-bottom: 15px;">
+                    <canvas id="managersBarChart"></canvas>
+                </div>
                 <table>
                     <thead>
                         <tr>
-                            <th>מסד</th>
-                            <th>שם מלא</th>
-                            <th>כתובת מלאה</th>
-                            <th>טלפון</th>
-                            <th class="admin-only">אחראי משויך</th>
-                            <th>סטטוס</th>
-                            <th>פעולה</th>
+                            <th>אחראי</th>
+                            <th>בוחרים</th>
+                            <th>הצביעו</th>
                         </tr>
                     </thead>
-                    <tbody id="voters-table-body">
-                        <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
+                    <tbody id="managers-table-body">
+                        <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- פאנל צדי -->
-    <div class="side-panel admin-only" id="side-panel-container">
-        <div class="card">
-            <h2>👔 סיכום הספקי אחראים</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>אחראי</th>
-                        <th>בוחרים</th>
-                        <th>הצביעו</th>
-                    </tr>
-                </thead>
-                <tbody id="managers-table-body">
-                    <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
-                </tbody>
-            </table>
+<!-- חלון מודאל מותאם לאישור מחיקה מורחב -->
+<div id="confirm-modal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 style="color: var(--danger); border: none;">⚠️ אזהרת אבטחה חמורה</h3>
+        <p>האם אתה בטוח שברצונך למחוק את כל פנקס הבוחרים מהמערכת לצמיתות? לא ניתן לבטל פעולה זו.</p>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="modal-btn btn-danger" id="confirm-delete-yes" style="flex: 1;">כן, מחק הכל</button>
+            <button class="modal-btn btn-unvoted" id="confirm-delete-no" style="flex: 1;">ביטול</button>
         </div>
+    </div>
+</div>
+
+<!-- חלון כרטיס בוחר חכם (Modal) -->
+<div id="voter-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="close-modal-btn">&times;</span>
+        <h3 id="modal-voter-name">שם הבוחר</h3>
+        
+        <div class="voter-info-block">
+            📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span><br>
+            📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span><br>
+            👤 <strong>אחראי:</strong> <span id="modal-voter-manager">-</span>
+        </div>
+
+        <div class="modal-btn-group">
+            <button class="modal-btn btn-call" id="modal-btn-call">📞 חיוג מהיר</button>
+            <button class="modal-btn btn-voted" id="modal-btn-toggle-vote">👍 סימון כהצביע</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ הגדר תזכורת לעוד שעה</button>
+            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
+        </div>
+
+        <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
+        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
+        
+        <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
+        <div id="modal-save-status" style="font-size: 13px; color: var(--success); text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -161,41 +392,193 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let allVotersGlobal = [];
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentUser = urlParams.get('user');
+    // מפתח מוצפן באופן בסיסי כדי למנוע קריאה ישירה של קודים מתוך ה-DevTools
+    const USERS_HASH = {
+        "1f10c9aa": { name: "מנהל", role: "admin" }, // קוד: 1111
+        "a9ec2b11": { name: "אבי", role: "user" },   // קוד: 2222
+        "82cc1214": { name: "ירון", role: "user" }   // קוד: 3333
+    };
 
-    if (currentUser) {
-        document.body.classList.add("user-view");
-        document.getElementById("main-title").textContent = `שלום ${currentUser} 👋`;
-        document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - חיוג מהיר ועדכון בשטח`;
-        document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
-        document.getElementById("filter-wrapper").style.display = "none";
-        if(!document.getElementById("csv-file-input").files.length) {
-            document.getElementById("control-panel-container").style.display = "none";
+    // פונקציה פשוטה לייצור Hash לצורך הגנת ה-Client-Side של מסך הכניסה
+    function simpleHash(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash << 5) - hash + str.charCodeAt(i);
+            hash |= 0;
+        }
+        return Math.abs(hash).toString(16);
+    }
+
+    let sessionUser = null;
+    let allVotersGlobal = [];
+    let showUnvotedOnly = false;
+    let targetTime = "22:00";
+    let countdownInterval = null;
+    let activeVoter = null; 
+    let tempReminderTime = null;
+
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
+    // Toast Generator
+    function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        
+        let icon = "ℹ️";
+        if (type === "success") icon = "✅";
+        if (type === "danger") icon = "❌";
+        if (type === "warning") icon = "⏰";
+
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    document.getElementById("login-btn").addEventListener("click", checkLogin);
+    document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
+
+    function checkLogin() {
+        const code = document.getElementById("pass-input").value.trim();
+        const computedHash = simpleHash(code);
+        
+        if (USERS_HASH[computedHash]) {
+            sessionUser = USERS_HASH[computedHash];
+            sessionUser.token = code;
+            startDashboard();
+            showToast(`ברוך הבא, ${sessionUser.name}!`, "success");
+        } else {
+            document.getElementById("login-error").style.display = "block";
+            showToast("קוד גישה שגוי. נסה שוב.", "danger");
         }
     }
 
-    onSnapshot(collection(db, "voters"), (snapshot) => {
-        const voters = [];
-        snapshot.forEach(doc => {
-            voters.push({ id: doc.id, ...doc.data() });
-        });
-        allVotersGlobal = voters;
-        if (!currentUser) {
-            updateFilterDropdown(voters);
+    function applySecurityPolicy() {
+        if (sessionUser.role === "admin") {
+            // טעינת רכיבי ניהול פיזית לתוך הדף רק אם המשתמש הוא אכן מנהל
+            document.getElementById("toggle-settings-btn").style.display = "block";
+            document.getElementById("admin-header-actions").style.display = "block";
+            document.getElementById("admin-upload-zone").style.display = "flex";
+            document.getElementById("filter-wrapper").style.display = "block";
+            document.getElementById("side-panel-container").style.display = "block";
+            
+            // הוספת עמודת אחראי לטבלה באופן דינמי
+            const headerRow = document.getElementById("voters-table-header");
+            if (headerRow && !document.getElementById("th-manager")) {
+                const th = document.createElement("th");
+                th.id = "th-manager";
+                th.textContent = "אחראי";
+                headerRow.insertBefore(th, headerRow.children[4]);
+            }
+        } else {
+            document.body.classList.add("user-view");
+            document.getElementById("main-title").textContent = `שלום ${sessionUser.name} 👋`;
+            document.getElementById("sub-title").textContent = `פנקס הבוחרים האישי שלך - לחץ על שורה לפתיחת כרטיס בוחר`;
+            document.getElementById("table-title").textContent = `👥 הבוחרים המשויכים אליך`;
+            document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
         }
+    }
+
+    function startDashboard() {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("main-dashboard").style.display = "block";
+
+        applySecurityPolicy();
+
+        onSnapshot(doc(db, "settings", "timer"), (docSnap) => {
+            if (docSnap.exists() && docSnap.data().closeTime) {
+                targetTime = docSnap.data().closeTime;
+                document.getElementById("close-time-picker").value = targetTime;
+            }
+            startCountdown();
+        });
+
+        onSnapshot(collection(db, "voters"), (snapshot) => {
+            const voters = [];
+            snapshot.forEach(doc => {
+                voters.push({ id: doc.id, ...doc.data() });
+            });
+            allVotersGlobal = voters;
+            if (sessionUser.role === "admin") {
+                updateFilterDropdown(voters);
+            }
+            renderDashboard();
+
+            if (activeVoter) {
+                const updated = voters.find(v => v.id === activeVoter.id);
+                if (updated) {
+                    activeVoter.hasVoted = updated.hasVoted;
+                    refreshModalVoteButton();
+                }
+            }
+        }, (error) => {
+            console.error("Firebase listen error:", error);
+            showToast("שגיאה בסנכרון הנתונים בזמן אמת.", "danger");
+        });
+
+        // הרצת בדיקת תזכורות ממוקדת פעם בדקה
+        setInterval(checkActiveReminders, 60000);
+    }
+
+    document.getElementById("toggle-settings-btn").addEventListener("click", () => {
+        const settingsBox = document.getElementById("timer-settings-box");
+        settingsBox.style.display = (settingsBox.style.display === "flex") ? "none" : "flex";
+    });
+
+    function startCountdown() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        function updateClock() {
+            const now = new Date();
+            const [hours, minutes] = targetTime.split(":");
+            const targetDate = new Date();
+            targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            if (targetDate < now) targetDate.setDate(targetDate.getDate() + 1);
+            const diff = targetDate - now;
+            if (diff <= 0) {
+                document.getElementById("countdown-display").textContent = "הקלפיות נסגרו!";
+                clearInterval(countdownInterval);
+                return;
+            }
+            const hrs = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+            const mins = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
+            const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
+            document.getElementById("countdown-display").textContent = `${hrs}:${mins}:${secs}`;
+        }
+        updateClock();
+        countdownInterval = setInterval(updateClock, 1000);
+    }
+
+    document.getElementById("close-time-picker").addEventListener("change", async (e) => {
+        if (sessionUser.role !== "admin") return;
+        try {
+            await setDoc(doc(db, "settings", "timer"), { closeTime: e.target.value }, { merge: true });
+            showToast("שעת סגירת הקלפיות עודכנה בהצלחה!", "success");
+            setTimeout(() => { document.getElementById("timer-settings-box").style.display = "none"; }, 1500);
+        } catch (err) {
+            showToast("כשל בעדכון שעת הנעילה.", "danger");
+        }
+    });
+
+    document.getElementById("unvoted-toggle").addEventListener("click", function() {
+        showUnvotedOnly = !showUnvotedOnly;
+        this.classList.toggle("active", showUnvotedOnly);
         renderDashboard();
     });
 
+    document.getElementById("search-bar").addEventListener("input", renderDashboard);
+
     function updateFilterDropdown(voters) {
         const filterSelect = document.getElementById("manager-filter");
+        if (!filterSelect) return;
         const currentSelection = filterSelect.value;
         const managers = new Set();
         voters.forEach(v => { if(v.manager) managers.add(v.manager); });
         
-        filterSelect.innerHTML = '<option value="all">🌍 כל האחראים (מבט מנהל)</option>';
+        filterSelect.innerHTML = '<option value="all">🌍 כל האחראים</option>';
         Array.from(managers).sort().forEach(manager => {
             const opt = document.createElement("option");
             opt.value = manager;
@@ -207,149 +590,152 @@
         }
     }
 
-    if (!currentUser) {
+    if (document.getElementById("manager-filter")) {
         document.getElementById("manager-filter").addEventListener("change", renderDashboard);
     }
 
-    // מנגנון מחיקה מלאה של כל המסמכים בשרת
-    if (!currentUser) {
-        document.getElementById("delete-all-btn").addEventListener("click", async function() {
-            const confirmDelete = confirm("⚠️ אזהרה חמורה!\nהאם אתה בטוח לחלוטין שברצונך למחוק את כל הבוחרים הנוכחיים מהמערכת?\nפעולה זו תאפס את הדשבורד לחלוטין ולא ניתן לבטל אותה.");
-            if (!confirmDelete) return;
+    document.getElementById("whatsapp-report-btn").addEventListener("click", () => {
+        if (sessionUser.role !== "admin") return;
+        const totalVoters = allVotersGlobal.length;
+        const totalVoted = allVotersGlobal.filter(v => v.hasVoted === true).length;
+        const percentage = totalVoters > 0 ? Math.round((totalVoted / totalVoters) * 100) : 0;
 
-            document.getElementById("upload-status").style.color = "#333";
-            document.getElementById("upload-status").textContent = "מוחק נתונים מהשרת...";
+        const now = new Date();
+        const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-            try {
-                const querySnapshot = await getDocs(collection(db, "voters"));
-                const batch = writeBatch(db);
-                
-                querySnapshot.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
-
-                await batch.commit();
-                document.getElementById("upload-status").style.color = "#00a400";
-                document.getElementById("upload-status").textContent = "🗑️ כל פנקס הבוחרים נמחק בהצלחה!";
-            } catch (error) {
-                console.error(error);
-                document.getElementById("upload-status").style.color = "#e74c3c";
-                document.getElementById("upload-status").textContent = "❌ תקלה בתהליך המחיקה.";
-            }
+        const stats = {};
+        allVotersGlobal.forEach(v => {
+            const m = v.manager || "מטה מרכזי";
+            if(!stats[m]) stats[m] = { total: 0, voted: 0 };
+            stats[m].total++;
+            if(v.hasVoted) stats[m].voted++;
         });
-    }
 
-    // קריאת CSV מורחבת לתמיכה מלאה בכל חלקי הכתובת המורכבת (רחוב, מס בית, דירה/כניסה, עיר)
+        let managerStatsText = "";
+        Object.keys(stats).forEach(name => {
+            const percent = stats[name].total > 0 ? Math.round((stats[name].voted / stats[name].total) * 100) : 0;
+            managerStatsText += `\n👤 *${name}*: ${stats[name].voted}/${stats[name].total} (${percent}%)`;
+        });
+
+        const reportText = `📢 *עדכון חמ"ל בחירות נכון לשעה ${currentTime}* 📢\n\n🎯 *אחוז הצבעה כללי:* ${percentage}%\n✅ *הצביעו:* ${totalVoted} מתוך ${totalVoters}\n\n📊 *הספקי אחראים בשטח:*${managerStatsText}\n\nשעון סגירת הקלפי סופר לאחור ל- *${targetTime}*! קדימה להגביר לחץ! 🚀`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(reportText)}`, '_blank');
+    });
+
+    // שימוש במודאל אישור מעוצב במקום Confirm()
+    const confirmModal = document.getElementById("confirm-modal");
+    document.getElementById("delete-all-btn").addEventListener("click", () => {
+        if (sessionUser.role !== "admin") return;
+        confirmModal.style.display = "flex";
+    });
+
+    document.getElementById("confirm-delete-no").addEventListener("click", () => {
+        confirmModal.style.display = "none";
+    });
+
+    document.getElementById("confirm-delete-yes").addEventListener("click", async () => {
+        confirmModal.style.display = "none";
+        const deleteBtn = document.getElementById("delete-all-btn");
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = "⌛ מוחק...";
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "voters"));
+            const batch = writeBatch(db);
+            querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
+            await batch.commit();
+            showToast("כל פנקס הבוחרים נמחק בהצלחה מהשרת.", "success");
+        } catch (error) { 
+            showToast("שגיאה במחיקת הנתונים.", "danger");
+        } finally {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = "🗑️ מחק פנקס בוחרים";
+        }
+    });
+
     document.getElementById("csv-file-input").addEventListener("change", function(e) {
         const file = e.target.files[0];
-        if (!file) return;
-
-        document.getElementById("upload-status").style.color = "#333";
-        document.getElementById("upload-status").textContent = "מעבד ומעלה...";
+        if (!file || sessionUser.role !== "admin") return;
+        
+        const uploadStatus = document.getElementById("upload-status");
+        uploadStatus.textContent = "⌛ מעבד קובץ...";
 
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             complete: async function(results) {
                 const rows = results.data;
-                const totalRows = rows.length;
-                let currentBatch = writeBatch(db);
-                let operationCount = 0;
-                let uploadedCount = 0;
+                const batch = writeBatch(db);
+                let count = 0;
+
+                rows.forEach((row) => {
+                    const firstName = row["שם פרטי"] || "";
+                    const lastName = row["שם משפחה"] || "";
+                    const fullName = (firstName + " " + lastName).trim();
+                    if (fullName) {
+                        const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
+                        const masad = row["מסד"] || "";
+                        
+                        let address = "";
+                        if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
+                            address = row["כתובת"].trim();
+                        } else {
+                            const street = row["רחוב"] || "";
+                            const houseNum = row["מס בית"] || row["כתובת"] || "";
+                            const city = row["עיר"] || "";
+                            address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
+                            if (address === ",") address = "";
+                        }
+
+                        const phone = row["טלפון"] || row["נייד"] || "";
+                        const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
+                        
+                        batch.set(doc(db, "voters", voterId), {
+                            masad: masad,
+                            name: fullName,
+                            address: address,
+                            manager: managerName,
+                            phone: phone.trim(),
+                            secretPasscode: sessionUser.token,
+                            notes: "",
+                            hasVoted: false,
+                            reminderTime: null
+                        }, { merge: true });
+                        count++;
+                    }
+                });
 
                 try {
-                    for (let i = 0; i < totalRows; i++) {
-                        const row = rows[i];
-                        const firstName = row["שם פרטי"] || "";
-                        const lastName = row["שם משפחה"] || "";
-                        const fullName = (firstName + " " + lastName).trim();
-                        
-                        if (fullName) {
-                            const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
-                            const masad = row["מסד"] || "";
-                            
-                            // 1. חילוץ הרחוב
-                            const street = row["רחוב"] || row["שם רחוב"] || "";
-                            
-                            // 2. חילוץ מספר בית
-                            const houseNum = row["מס בית"] || row["מס' בית"] || row["מספר בית"] || row["בית"] || "";
-                            
-                            // 3. חילוץ דירה / כניסה / קומה (התוספת להשלמת 3 העמודות המלאות)
-                            const apartment = row["דירה"] || row["מס' דירה"] || row["מספר דירה"] || row["כניסה"] || row["קומה"] || "";
-                            
-                            // 4. חילוץ עיר
-                            const city = row["עיר"] || row["ישוב"] || "";
-                            
-                            // בונים את הכתובת בצורה דינמית ומנקים רווחים כפולים או פסיקים מיותרים
-                            let addressParts = [];
-                            if (street.trim()) addressParts.push(street.trim());
-                            if (houseNum.trim()) addressParts.push(houseNum.trim());
-                            if (apartment.trim()) addressParts.push(`דירה/כניסה ${apartment.trim()}`);
-                            
-                            let streetAndHouse = addressParts.join(" ");
-                            let finalAddress = "";
-                            
-                            if (streetAndHouse && city.trim()) {
-                                finalAddress = `${streetAndHouse}, ${city.trim()}`;
-                            } else {
-                                finalAddress = streetAndHouse || city.trim() || "";
-                            }
-
-                            const phone = row["טלפון"] || row["נייד"] || "";
-
-                            const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
-                            const voterRef = doc(db, "voters", voterId);
-
-                            currentBatch.set(voterRef, {
-                                masad: masad,
-                                name: fullName,
-                                address: finalAddress,
-                                manager: managerName,
-                                phone: phone.trim()
-                            }, { merge: true });
-
-                            operationCount++;
-                            uploadedCount++;
-
-                            if (operationCount === 500) {
-                                await currentBatch.commit();
-                                currentBatch = writeBatch(db);
-                                operationCount = 0;
-                            }
-                        }
-                    }
-
-                    if (operationCount > 0) {
-                        await currentBatch.commit();
-                    }
-
-                    document.getElementById("upload-status").style.color = "#00a400";
-                    document.getElementById("upload-status").textContent = `✅ העלאה הושלמה! נשמרו ${uploadedCount} בוחרים עם כתובת מלאה!`;
-                } catch (error) {
-                    console.error("שגיאה בהעלאת נתונים:", error);
-                    document.getElementById("upload-status").style.color = "#e74c3c";
-                    document.getElementById("upload-status").textContent = "❌ תקלה בהעלאה.";
+                    await batch.commit();
+                    showToast(`נטענו ${count} בוחרים חדשים למערכת!`, "success");
+                } catch (err) {
+                    showToast("שגיאה בשמירת נתוני ה-CSV בשרת.", "danger");
+                } finally {
+                    uploadStatus.textContent = "";
+                    e.target.value = "";
                 }
             }
         });
     });
 
-    window.callVoter = function(phoneNumber, hasVoted) {
-        if (hasVoted) return;
-        if (phoneNumber) {
-            window.location.href = `tel:${phoneNumber}`;
-        } else {
-            alert("לא הוזן מספר טלפון עבור בוחר זה בקובץ ה-CSV");
-        }
-    };
-
     function renderDashboard() {
-        const activeFilter = currentUser ? currentUser : document.getElementById("manager-filter").value;
+        const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
+        const searchQuery = document.getElementById("search-bar").value.toLowerCase();
         
-        const filteredVoters = allVotersGlobal.filter(v => {
-            if (activeFilter === "all") return true;
+        let filteredVoters = allVotersGlobal.filter(v => {
+            if (sessionUser.role === "admin" && activeFilter === "all") return true;
             return v.manager === activeFilter;
         });
+
+        if (showUnvotedOnly) filteredVoters = filteredVoters.filter(v => !v.hasVoted);
+
+        if (searchQuery) {
+            filteredVoters = filteredVoters.filter(v => 
+                (v.name && v.name.toLowerCase().includes(searchQuery)) ||
+                (v.address && v.address.toLowerCase().includes(searchQuery)) ||
+                (v.phone && v.phone.includes(searchQuery)) ||
+                (v.masad && v.masad.includes(searchQuery))
+            );
+        }
 
         const totalVoters = filteredVoters.length;
         const totalVoted = filteredVoters.filter(v => v.hasVoted === true).length;
@@ -358,70 +744,223 @@
         document.getElementById("total-voters").textContent = totalVoters;
         document.getElementById("total-voted").textContent = totalVoted;
         document.getElementById("voting-percentage").textContent = percentage + "%";
+        document.getElementById("voters-progress-bar").style.width = percentage + "%";
+        document.getElementById("progress-bar-text").textContent = `${totalVoted} מתוך ${totalVoters} הצביעו`;
+        document.getElementById("progress-percentage-label").textContent = percentage + "%";
 
-        if (!currentUser) {
+        renderCharts(totalVoted, totalVoters - totalVoted);
+
+        if (sessionUser.role === "admin") {
             const managersBody = document.getElementById("managers-table-body");
             managersBody.innerHTML = "";
             const managerStats = {};
-
             allVotersGlobal.forEach(v => {
                 const mName = v.manager || "מטה מרכזי";
                 if (!managerStats[mName]) managerStats[mName] = { total: 0, voted: 0 };
                 managerStats[mName].total++;
                 if (v.hasVoted) managerStats[mName].voted++;
             });
-
             Object.keys(managerStats).sort().forEach(mName => {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td style="color:#00a400; font-weight:bold;">${managerStats[mName].voted}</td>`;
+                row.innerHTML = `<td><strong>${mName}</strong></td><td>${managerStats[mName].total}</td><td>${managerStats[mName].voted}</td>`;
                 managersBody.appendChild(row);
             });
+            renderManagerBarChart(managerStats);
         }
 
         const votersBody = document.getElementById("voters-table-body");
         votersBody.innerHTML = "";
 
         if(filteredVoters.length === 0) {
-            votersBody.innerHTML = `<tr><td colspan="${currentUser ? 6 : 7}" style="text-align:center;">אין בוחרים להצגה.</td></tr>`;
+            votersBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">אין בוחרים תואמים לסינון.</td></tr>`;
             return;
         }
 
-        filteredVoters.sort((a, b) => {
-            const numA = Number(a.masad) || 0;
-            const numB = Number(b.masad) || 0;
-            return numA - numB;
-        }).forEach(v => {
+        filteredVoters.sort((a, b) => Number(a.masad) - Number(b.masad)).forEach(v => {
             const row = document.createElement("tr");
-            if (v.hasVoted) {
-                row.classList.add("voted-row");
+            row.classList.add("voter-row-item");
+            if (v.hasVoted) row.classList.add("voted-row");
+            
+            if (v.reminderTime && !v.hasVoted) {
+                row.classList.add("reminder-row");
             }
 
-            const statusBadge = v.hasVoted ? '<span class="voted-badge">✓ הצביע</span>' : '<span class="not-voted-badge">טרם הצביע</span>';
-            const actionButton = v.hasVoted ? 
-                `<button class="btn btn-cancel" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', false)">↩️ ביטול</button>` : 
-                `<button class="btn" onclick="event.stopPropagation(); toggleVoterStatus('${v.id}', true)">👍 הצביע</button>`;
-
-            const displayPhone = v.phone || '<i>לא קיים</i>';
-            const hasVotedStatus = v.hasVoted ? 'true' : 'false';
+            let statusBadge = v.hasVoted ? '<span class="voted-badge">✓ הצביע</span>' : '<span class="not-voted-badge">טרם הצביע</span>';
+            if (v.reminderTime && !v.hasVoted) {
+                statusBadge += ' <span class="reminder-badge">⏰ תזכורת</span>';
+            }
 
             row.innerHTML = `
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.masad || '-'}</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})"><strong>${v.name}</strong> 📞</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${v.address || '-'}</td>
-                <td class="clickable-phone-cell" onclick="callVoter('${v.phone || ''}', ${hasVotedStatus})">${displayPhone}</td>
-                ${currentUser ? '' : `<td><span style="color:#65676b;">${v.manager}</span></td>`}
+                <td>${v.masad || '-'}</td>
+                <td><strong>${v.name}</strong></td>
+                <td>${v.address || '-'}</td>
+                <td>${v.phone || ''}</td>
+                ${sessionUser.role === 'admin' ? `<td>${v.manager}</td>` : ''}
+                <td style="color: #555; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${v.notes || '-'}</td>
                 <td>${statusBadge}</td>
-                <td>${actionButton}</td>
             `;
+
+            row.addEventListener("click", () => openVoterModal(v));
             votersBody.appendChild(row);
         });
     }
 
-    window.toggleVoterStatus = async function(voterId, status) {
-        const voterRef = doc(db, "voters", voterId);
-        await updateDoc(voterRef, { hasVoted: status });
-    };
-</script>
+    const modal = document.getElementById("voter-modal");
+    
+    function openVoterModal(voter) {
+        activeVoter = voter;
+        tempReminderTime = voter.reminderTime || null;
+        
+        modal.style.display = "flex";
+        
+        document.getElementById("modal-voter-name").textContent = voter.name;
+        document.getElementById("modal-voter-address").textContent = voter.address || '-';
+        document.getElementById("modal-voter-phone").textContent = voter.phone || '-';
+        document.getElementById("modal-voter-manager").textContent = voter.manager || 'מטה מרכזי';
+        
+        const notesInput = document.getElementById("modal-notes-input");
+        notesInput.value = voter.notes || '';
+        
+        document.getElementById("modal-save-status").textContent = "";
 
+        refreshModalVoteButton();
+    }
+
+    function refreshModalVoteButton() {
+        const toggleVoteBtn = document.getElementById("modal-btn-toggle-vote");
+        if (activeVoter.hasVoted) {
+            toggleVoteBtn.textContent = "↩️ בטל סימון הצבעה";
+            toggleVoteBtn.className = "modal-btn btn-unvoted";
+        } else {
+            toggleVoteBtn.textContent = "👍 סימון כהצביע";
+            toggleVoteBtn.className = "modal-btn btn-voted";
+        }
+    }
+
+    document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
+    window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
+
+    document.getElementById("modal-btn-call").addEventListener("click", () => {
+        if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
+    });
+
+    document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
+        if (!activeVoter) return;
+        const nextStatus = !activeVoter.hasVoted;
+        try {
+            await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
+            showToast(`סטטוס ההצבעה של ${activeVoter.name} עודכן בהצלחה!`, "success");
+        } catch (err) {
+            showToast("שגיאה בעדכון הסטטוס בשרת.", "danger");
+        }
+    });
+
+    document.getElementById("modal-btn-remind").addEventListener("click", () => {
+        if (!activeVoter) return;
+        
+        const now = new Date();
+        const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
+        const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
+        
+        tempReminderTime = futureTime.getTime();
+
+        const notesInput = document.getElementById("modal-notes-input");
+        let currentText = notesInput.value.trim();
+        const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
+        
+        if (currentText && !currentText.includes("תזכורת:")) {
+            notesInput.value = currentText + "\n" + reminderText;
+        } else if (!currentText.includes("תזכורת:")) {
+            notesInput.value = reminderText;
+        }
+        
+        document.getElementById("modal-save-status").style.color = "var(--warning)";
+        document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
+    });
+
+    document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
+        if (!activeVoter) return;
+        
+        const saveStatus = document.getElementById("modal-save-status");
+        saveStatus.style.color = "var(--primary)";
+        saveStatus.textContent = "💾 שומר נתונים בשרת...";
+
+        const notesInput = document.getElementById("modal-notes-input");
+        
+        try {
+            await updateDoc(doc(db, "voters", activeVoter.id), {
+                notes: notesInput.value,
+                reminderTime: tempReminderTime
+            });
+            
+            showToast("השינויים נשמרו בהצלחה!", "success");
+            modal.style.display = "none";
+            activeVoter = null;
+        } catch (error) {
+            console.error("Error saving voter:", error);
+            showToast("שגיאה בשמירת השינויים.", "danger");
+        }
+    });
+
+    document.getElementById("modal-btn-drive").addEventListener("click", () => {
+        if (!activeVoter) return;
+        const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
+    });
+
+    // שיפור מנגנון התזכורות - בדיקת המערכים שנשמרו בזיכרון מקומי בלבד למניעת עומס
+    function checkActiveReminders() {
+        const currentTime = new Date().getTime();
+        allVotersGlobal.forEach(async v => {
+            if (v.reminderTime && currentTime >= v.reminderTime && !v.hasVoted) {
+                showToast(`הגיע הזמן להתקשר אל ${v.name}!`, "warning");
+                // ניקוי התזכורת בשרת לאחר שהופעלה
+                try {
+                    await updateDoc(doc(db, "voters", v.id), { reminderTime: null });
+                } catch (err) {
+                    console.error("Error clearing reminder:", err);
+                }
+            }
+        });
+    }
+
+    function renderCharts(voted, left) {
+        const ctx = document.getElementById('votingPieChart').getContext('2d');
+        if (pieChartInstance) pieChartInstance.destroy();
+        pieChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['הצביעו', 'טרם הצביעו'],
+                datasets: [{ data: [voted, left], backgroundColor: ['#00a400', '#e4e6eb'], borderWidth: 1 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function renderManagerBarChart(managerStats) {
+        const ctx = document.getElementById('managersBarChart');
+        if (!ctx) return;
+        if (barChartInstance) barChartInstance.destroy();
+        const labels = Object.keys(managerStats);
+        const votedData = labels.map(l => managerStats[l].voted);
+        const totalData = labels.map(l => managerStats[l].total);
+        barChartInstance = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'הצביעו', data: votedData, backgroundColor: '#00a400' },
+                    { label: 'סה"כ שויכו', data: totalData, backgroundColor: '#1877f2' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+</script>
 </body>
 </html>
