@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות דינמי - גרסה 2.1</title>
+    <title>חמ"ל בחירות</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -17,290 +17,227 @@
         body {
             font-family: 'Rubik', sans-serif;
         }
-        .reminder-glow {
-            animation: pulse-yellow 2s infinite;
-        }
-        @keyframes pulse-yellow {
-            0%, 100% { background-color: rgba(254, 240, 138, 0.6); }
-            50% { background-color: rgba(254, 240, 138, 1); }
+        .reminder-active {
+            background-color: #fef08a !important; /* צבע צהוב בולט לשורת תזכורת */
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 min-h-screen">
 
     <!-- Login Container -->
-    <div id="login-container" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4">
-            <div class="text-center mb-8">
-                <div class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                    <i class="fa-solid fa-square-poll-vertical"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900">חמ"ל בחירות בזמן אמת</h1>
-                <p class="text-slate-500 mt-2">אנא הזן קוד גישה לכניסה למערכת</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">קוד גישה סודי</label>
-                <input type="password" id="access-code-input" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl tracking-widest" placeholder="••••">
-                <button onclick="handleLogin()" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg shadow-blue-500/20">
-                    התחבר למערכת
-                </button>
-                <p id="login-error" class="text-red-500 text-sm text-center mt-3 hidden">קוד גישה שגוי, אנא נסה שנית.</p>
-            </div>
+    <div id="login-container" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-4 text-center">
+            <h1 class="text-2xl font-bold mb-6 text-gray-900">חמ"ל בחירות - התחברות</h1>
+            <input type="password" id="access-code-input" class="w-full px-4 py-3 border rounded-lg text-center text-2xl tracking-widest mb-4" placeholder="קוד גישה">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
+                התחבר
+            </button>
+            <p id="login-error" class="text-red-500 text-sm mt-3 hidden">קוד גישה שגוי, אנא נסה שנית.</p>
         </div>
     </div>
 
-    <!-- App Wrapper (Hidden until login) -->
-    <div id="app-container" class="hidden flex-1 flex flex-col">
-        <!-- Top Navbar -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <span class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-chart-line"></i></span>
-                    <span class="font-bold text-xl text-slate-900">חמ"ל בחירות</span>
-                    <span id="user-badge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"></span>
-                </div>
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <span id="live-indicator" class="flex items-center text-xs text-green-600 font-medium">
-                        <span class="h-2.5 w-2.5 bg-green-500 rounded-full inline-block ml-1.5 animate-ping"></span>
-                        מחובר בזמן אמת
-                    </span>
-                    <button onclick="handleLogout()" class="text-slate-500 hover:text-red-600 transition-colors">
-                        <i class="fa-solid fa-right-from-bracket text-lg"></i>
-                    </button>
-                </div>
+    <!-- App Wrapper -->
+    <div id="app-container" class="hidden">
+        <!-- Navbar -->
+        <header class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between shadow-md">
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <span class="font-bold text-xl">חמ"ל בחירות</span>
+                <span id="user-badge" class="bg-blue-800 text-xs px-2.5 py-1 rounded"></span>
             </div>
+            <button onclick="handleLogout()" class="hover:text-gray-200"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
         </header>
 
-        <!-- Main Content Area -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto p-6">
             
-            <!-- Dashboard Stats (Admins only) -->
+            <!-- Admin Section -->
             <section id="admin-dashboard" class="mb-8 hidden">
-                <h2 class="text-lg font-bold text-slate-900 mb-4">תמונת מצב חמ"ל</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">סה"כ בעלי זכות בחירה</p>
-                            <h3 id="stat-total-voters" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
-                        </div>
-                        <div class="bg-slate-100 text-slate-600 p-3 rounded-xl"><i class="fa-solid fa-users text-xl"></i></div>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border">
+                        <p class="text-gray-500 text-sm">סה"כ בוחרים</p>
+                        <h3 id="stat-total-voters" class="text-2xl font-bold text-gray-900">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">הצביעו בפועל</p>
-                            <h3 id="stat-voted" class="text-3xl font-bold text-green-600 mt-1">0</h3>
-                        </div>
-                        <div class="bg-green-100 text-green-600 p-3 rounded-xl"><i class="fa-solid fa-check-double text-xl"></i></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border">
+                        <p class="text-gray-500 text-sm">הצביעו</p>
+                        <h3 id="stat-voted" class="text-2xl font-bold text-green-600">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">טרם הצביעו</p>
-                            <h3 id="stat-not-voted" class="text-3xl font-bold text-amber-600 mt-1">0</h3>
-                        </div>
-                        <div class="bg-amber-100 text-amber-600 p-3 rounded-xl"><i class="fa-solid fa-hourglass-half text-xl"></i></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border">
+                        <p class="text-gray-500 text-sm">טרם הצביעו</p>
+                        <h3 id="stat-not-voted" class="text-2xl font-bold text-amber-600">0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">אחוז הצבעה כללי</p>
-                            <h3 id="stat-percent" class="text-3xl font-bold text-blue-600 mt-1">0%</h3>
-                        </div>
-                        <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><i class="fa-solid fa-percent text-xl"></i></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border">
+                        <p class="text-gray-500 text-sm">אחוז הצבעה</p>
+                        <h3 id="stat-percent" class="text-2xl font-bold text-blue-600">0%</h3>
                     </div>
                 </div>
 
-                <!-- Graphs Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 class="text-sm font-semibold text-slate-700 mb-4 text-center">יחס מצביעים</h3>
-                        <div class="h-64 flex justify-center">
-                            <canvas id="votersPieChart"></canvas>
-                        </div>
+                <!-- Graphs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border h-64">
+                        <canvas id="votersPieChart"></canvas>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 class="text-sm font-semibold text-slate-700 mb-4 text-center">קצב הצבעה לפי אחראי</h3>
-                        <div class="h-64 flex justify-center">
-                            <canvas id="responsiblesBarChart"></canvas>
-                        </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border h-64">
+                        <canvas id="responsiblesBarChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Admin Action Controls -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8 flex flex-wrap gap-4 items-center justify-between">
+                <!-- Admin Actions -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border flex flex-wrap gap-4 items-center justify-between mb-6">
                     <div class="flex items-center space-x-4 space-x-reverse">
-                        <label class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl cursor-pointer transition duration-150 inline-flex items-center">
-                            <i class="fa-solid fa-file-import ml-2"></i> ייבוא פנקס מ-CSV
+                        <label class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer transition">
+                            <i class="fa-solid fa-file-import ml-1"></i> טען קובץ CSV
                             <input type="file" id="csv-file-input" accept=".csv" class="hidden" onchange="importCSV(event)">
                         </label>
-                        <button onclick="clearDatabase()" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-5 rounded-xl border border-red-200 transition duration-150 inline-flex items-center">
-                            <i class="fa-solid fa-trash-can ml-2"></i> איפוס ומחיקת פנקס
+                        <button onclick="clearDatabase()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition">
+                            <i class="fa-solid fa-trash-can ml-1"></i> מחק פנקס
                         </button>
                     </div>
-                    <div>
-                        <button onclick="generateWhatsAppReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl transition duration-150 inline-flex items-center shadow-lg shadow-emerald-600/10">
-                            <i class="fa-brands fa-whatsapp ml-2 text-lg"></i> הפק דוח סטטוס לוואטסאפ
-                        </button>
-                    </div>
+                    <button onclick="generateWhatsAppReport()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                        <i class="fa-brands fa-whatsapp ml-1 text-lg"></i> דוח לוואטסאפ
+                    </button>
                 </div>
             </section>
 
-            <!-- Filters and Search -->
-            <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </span>
-                        <input type="text" id="search-input" oninput="filterVoters()" class="w-full pr-10 pl-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="חיפוש לפי שם, טלפון או כתובת...">
-                    </div>
-                    <div>
-                        <select id="status-filter" onchange="filterVoters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="all">כל הסטטוסים</option>
-                            <option value="voted">הצביעו</option>
-                            <option value="not-voted">טרם הצביעו</option>
-                            <option value="reminder">עם תזכורת פעילה</option>
-                        </select>
-                    </div>
-                    <div id="responsible-filter-container" class="hidden">
-                        <select id="responsible-filter" onchange="filterVoters()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="all">כל האחראים</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-slate-500">מציג <span id="displayed-count" class="font-bold text-slate-900">0</span> מתוך <span id="total-count" class="font-bold text-slate-900">0</span> בוחרים</span>
-                    </div>
+            <!-- Filters -->
+            <section class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-wrap gap-4 items-center">
+                <input type="text" id="search-input" oninput="filterVoters()" class="border p-2 rounded w-full md:w-64" placeholder="חיפוש חופשי...">
+                <select id="status-filter" onchange="filterVoters()" class="border p-2 rounded">
+                    <option value="all">כל הסטטוסים</option>
+                    <option value="voted">הצביעו</option>
+                    <option value="not-voted">טרם הצביעו</option>
+                    <option value="reminder">עם תזכורת</option>
+                </select>
+                <div id="responsible-filter-container" class="hidden">
+                    <select id="responsible-filter" onchange="filterVoters()" class="border p-2 rounded">
+                        <option value="all">כל האחראים</option>
+                    </select>
+                </div>
+                <div class="mr-auto">
+                    <span class="text-sm text-gray-500">מציג <span id="displayed-count" class="font-bold">0</span> מתוך <span id="total-count" class="font-bold">0</span></span>
                 </div>
             </section>
 
-            <!-- Voters Table List -->
-            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm font-semibold">
-                                <th class="p-4">מזהה/קלפי</th>
-                                <th class="p-4">שם הבוחר</th>
-                                <th class="p-4">כתובת</th>
-                                <th class="p-4">טלפון</th>
-                                <th class="p-4">אחראי</th>
-                                <th class="p-4 text-center">סטטוס</th>
-                                <th class="p-4 text-center">תזכורת</th>
-                            </tr>
-                        </thead>
-                        <tbody id="voters-table-body" class="divide-y divide-slate-100 text-sm">
-                            <tr>
-                                <td colspan="7" class="p-8 text-center text-slate-400">טוען נתונים...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Table -->
+            <section class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b text-gray-600 text-sm font-semibold">
+                            <th class="p-3">מזהה</th>
+                            <th class="p-3">שם</th>
+                            <th class="p-3">כתובת</th>
+                            <th class="p-3">טלפון</th>
+                            <th class="p-3">אחראי</th>
+                            <th class="p-3 text-center">סטטוס</th>
+                            <th class="p-3 text-center">תזכורת</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voters-table-body" class="divide-y text-sm">
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-gray-400">טוען נתונים...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </section>
         </main>
     </div>
 
-    <!-- Smart Modal Card Window (Voter Card) -->
-    <div id="voter-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <!-- Voter Modal Card -->
+    <div id="voter-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white w-full max-w-lg rounded-lg shadow-lg overflow-hidden flex flex-col">
             <!-- Modal Header -->
-            <div class="bg-slate-900 text-white p-6 flex justify-between items-start">
+            <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
                 <div>
-                    <span id="modal-badge-id" class="text-xs bg-white/20 text-white px-2.5 py-1 rounded-md font-mono"></span>
-                    <h3 id="modal-voter-name" class="text-xl font-bold mt-2">טוען...</h3>
-                    <p id="modal-voter-address" class="text-slate-400 text-sm mt-1"></p>
+                    <span id="modal-badge-id" class="text-xs bg-gray-700 px-2 py-0.5 rounded"></span>
+                    <h3 id="modal-voter-name" class="text-lg font-bold mt-1">טוען...</h3>
+                    <p id="modal-voter-address" class="text-gray-400 text-xs"></p>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-2xl"></i>
-                </button>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <!-- Modal Body (Scrollable) -->
-            <div class="p-6 space-y-6 overflow-y-auto flex-1">
-                <!-- Phone and Quick Actions -->
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+                <!-- Phone and Vote Status -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="bg-gray-50 p-3 rounded border flex items-center justify-between">
                         <div>
-                            <p class="text-xs text-slate-400 font-semibold">מספר טלפון</p>
-                            <p id="modal-voter-phone" class="font-bold text-slate-800 mt-1 font-mono"></p>
+                            <p class="text-xs text-gray-400">טלפון</p>
+                            <p id="modal-voter-phone" class="font-bold text-gray-800"></p>
                         </div>
-                        <a id="modal-phone-call-btn" href="#" class="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                        <a id="modal-phone-call-btn" href="#" class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700">
                             <i class="fa-solid fa-phone"></i>
                         </a>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="bg-gray-50 p-3 rounded border flex items-center justify-between">
                         <div>
-                            <p class="text-xs text-slate-400 font-semibold">סטטוס הצבעה</p>
-                            <p id="modal-voter-status-lbl" class="font-bold mt-1">לא הצביע</p>
+                            <p class="text-xs text-gray-400">סטטוס הצבעה</p>
+                            <p id="modal-voter-status-lbl" class="font-bold"></p>
                         </div>
-                        <button id="modal-toggle-vote-btn" onclick="toggleVoteState()" class="px-4 py-2 rounded-lg font-bold text-xs transition-colors"></button>
+                        <button id="modal-toggle-vote-btn" onclick="toggleVoteState()" class="px-3 py-1.5 rounded font-bold text-xs"></button>
                     </div>
                 </div>
 
-                <!-- Driver Dispatch -->
-                <div class="border-t border-slate-200 pt-5">
-                    <h4 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-car ml-1.5 text-blue-600"></i>תיאום הסעה לקלפי</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input type="text" id="driver-phone-input" class="md:col-span-2 px-4 py-2.5 border border-slate-300 rounded-xl text-sm" placeholder="מספר טלפון של הנהג/ת">
-                        <button onclick="sendDriverWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-2.5 px-4 rounded-xl transition duration-150 flex items-center justify-center">
-                            <i class="fa-brands fa-whatsapp ml-2 text-base"></i>שלח נהג
+                <!-- Driver dispatch -->
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-bold mb-2">שליחת נהג</h4>
+                    <div class="flex gap-2">
+                        <input type="text" id="driver-phone-input" class="border p-2 rounded text-sm flex-1" placeholder="טלפון של הנהג">
+                        <button onclick="sendDriverWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white font-bold text-sm px-4 py-2 rounded">
+                            שלח נהג
                         </button>
                     </div>
                 </div>
 
-                <!-- Reminder System -->
-                <div class="border-t border-slate-200 pt-5">
-                    <h4 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-bell ml-1.5 text-amber-500"></i>הגדרת תזכורת לחזרה לבוחר</h4>
-                    <div class="space-y-4">
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="setReminderQuickOffset(20)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold py-2 px-3 rounded-lg transition">עוד 20 דק'</button>
-                            <button onclick="setReminderQuickOffset(30)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold py-2 px-3 rounded-lg transition">עוד חצי שעה</button>
-                            <button onclick="setReminderQuickOffset(60)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold py-2 px-3 rounded-lg transition">עוד שעה</button>
+                <!-- Reminders Form (WITH CLOCK UPDATE FIX) -->
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-bold mb-2">תזכורת חזרה לבוחר</h4>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <button onclick="setReminderQuickOffset(20)" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold py-1 px-2.5 rounded">עוד 20 דק'</button>
+                            <button onclick="setReminderQuickOffset(30)" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold py-1 px-2.5 rounded">עוד חצי שעה</button>
+                            <button onclick="setReminderQuickOffset(60)" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold py-1 px-2.5 rounded">עוד שעה</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs text-slate-500 font-bold mb-1.5">השעה לתזכורת</label>
-                                <input type="time" id="reminder-time-input" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                                <label class="text-xs text-gray-500 block mb-1">שעת התזכורת</label>
+                                <input type="time" id="reminder-time-input" class="w-full border p-2 rounded text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-slate-500 font-bold mb-1.5">תוכן התזכורת</label>
-                                <input type="text" id="reminder-desc-input" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" placeholder="למשל: ביקש שנתקשר שוב בצהריים">
+                                <label class="text-xs text-gray-500 block mb-1">תוכן התזכורת</label>
+                                <input type="text" id="reminder-desc-input" class="w-full border p-2 rounded text-sm" placeholder="פרטים נוספים">
                             </div>
                         </div>
-                        <div class="flex space-x-2 space-x-reverse justify-end">
-                            <button onclick="clearVoterReminder()" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs py-2 px-4 rounded-lg border border-red-200 transition">
-                                <i class="fa-solid fa-bell-slash ml-1"></i> מחק תזכורת
-                            </button>
-                            <button onclick="saveVoterReminder()" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs py-2 px-4 rounded-lg transition">
-                                שמור תזכורת
-                            </button>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="clearVoterReminder()" class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded hover:bg-red-200">מחק תזכורת</button>
+                            <button onclick="saveVoterReminder()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded">שמור תזכורת</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Notes Area (Autosave Debounced) -->
-                <div class="border-t border-slate-200 pt-5">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-sm font-bold text-slate-800"><i class="fa-regular fa-comment-dots ml-1.5 text-slate-500"></i>הערות ועדכונים מהשטח</label>
-                        <span id="notes-status" class="text-xs text-slate-400">שמור</span>
+                <!-- Notes (Debounced) -->
+                <div class="border-t pt-4">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-sm font-bold">הערות</label>
+                        <span id="notes-status" class="text-xs text-gray-400">שמור</span>
                     </div>
-                    <textarea id="modal-voter-notes" oninput="onNotesInput(this.value)" rows="3" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="הקלד כאן הערות לגבי הבוחר (יישמר אוטומטית...)..."></textarea>
+                    <textarea id="modal-voter-notes" oninput="onNotesInput(this.value)" rows="2" class="w-full border p-2 rounded text-sm" placeholder="הקלד הערה..."></textarea>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK Scripts -->
+    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURATION & ROLES
-        // ==========================================
+        // CONFIG & ROLES
         const ROLES_CONFIG = {
             "1111": { name: "מנהל", role: "admin", allowed_responsibles: [] },
             "2222": { name: "אבי", role: "user", allowed_responsibles: ["אבי"] },
             "3333": { name: "ירון", role: "user", allowed_responsibles: ["ירון"] }
         };
 
-        // Firebase Configuration (השלם את הפרטים של הפרויקט שלך כאן)
+        // Firebase Setup (החלף בנתונים שלך)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -310,27 +247,20 @@
             appId: "YOUR_APP_ID"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Application State
         let currentUser = null;
         let votersData = [];
         let currentEditingVoterId = null;
         let debounceTimer = null;
-        let activeReminders = {}; // Tracks triggers to avoid duplicate alert popups
-
-        // Chart instances
+        let activeReminders = {};
         let pieChart = null;
         let barChart = null;
 
-        // Timer to check active reminders every minute
-        setInterval(checkRemindersClock, 10000);
+        setInterval(checkRemindersClock, 10000); // בדוק תזכורות פעילות פעם ב-10 שניות
 
-        // ==========================================
-        // 2. AUTHENTICATION & LOGIN FLOW
-        // ==========================================
+        // LOGIN
         function handleLogin() {
             const code = document.getElementById('access-code-input').value.trim();
             if (ROLES_CONFIG[code]) {
@@ -346,8 +276,6 @@
                     document.getElementById('admin-dashboard').classList.add('hidden');
                     document.getElementById('responsible-filter-container').classList.add('hidden');
                 }
-
-                // Start Listening to Firestore Database Realtime updates
                 initRealtimeSync();
             } else {
                 const err = document.getElementById('login-error');
@@ -363,32 +291,23 @@
             document.getElementById('access-code-input').value = '';
         }
 
-        // ==========================================
-        // 3. REALTIME SYNC (FIRESTORE)
-        // ==========================================
+        // REALTIME SYNC
         function initRealtimeSync() {
             db.collection("voters").onSnapshot((snapshot) => {
-                const tempVoters = [];
+                const temp = [];
                 snapshot.forEach((doc) => {
-                    tempVoters.push({ id: doc.id, ...doc.data() });
+                    temp.push({ id: doc.id, ...doc.data() });
                 });
-                votersData = tempVoters;
-                
-                // Populate Responsible Filter dynamically (Only if admin)
+                votersData = temp;
                 if (currentUser && currentUser.role === 'admin') {
                     populateResponsibleFilter();
                 }
-
                 renderVotersTable();
                 updateDashboard();
-            }, (error) => {
-                console.error("Error fetching voters realtime: ", error);
             });
         }
 
-        // ==========================================
-        // 4. SMART MULTI-FIELD CSV IMPORT (CRITICAL FIX)
-        // ==========================================
+        // CSV IMPORT (WITH COMBINED 3 ADDRESS FIELDS FIX)
         function importCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -402,23 +321,17 @@
                     let count = 0;
 
                     for (const row of rawData) {
-                        // 1. Resolve Name
                         const firstName = row['שם פרטי'] || '';
                         const lastName = row['שם משפחה'] || '';
                         const fullName = row['שם מלא'] || `${firstName} ${lastName}`.trim();
-
-                        // 2. Resolve Id/Voter code
                         const voterId = row['מסד'] || row['מזהה'] || row['תעודת זהות'] || Math.random().toString(36).substr(2, 9);
-
-                        // 3. Resolve Phone
                         const phone = row['טלפון'] || row['נייד'] || row['טלפון נייד'] || '';
 
-                        // 4. FIX: Smart Multi-Field Address Resolution (Street, House No, City)
-                        const street = row['רחוב'] ? row['רחוב'].trim() : '';
+                        // FIX: משיכה מבוקרת של 3 שדות הכתובת ואיחודם
+                        const street = row['רחוב'] ? String(row['רחוב']).trim() : '';
                         const houseNo = row['מס בית'] || row['מספר בית'] || row['בית'] ? String(row['מס בית'] || row['מספר בית'] || row['בית']).trim() : '';
-                        const city = row['עיר'] || row['ישוב'] ? row['עיר'] || row['ישוב'].trim() : '';
+                        const city = row['עיר'] || row['ישוב'] ? String(row['עיר'] || row['ישוב']).trim() : '';
 
-                        // Combine address fields elegantly, filtering out blank entries
                         const addressParts = [];
                         if (street) {
                             if (houseNo) {
@@ -426,20 +339,21 @@
                             } else {
                                 addressParts.push(street);
                             }
+                        } else if (houseNo) {
+                            addressParts.push(`בית ${houseNo}`);
                         }
+                        
                         if (city) {
                             addressParts.push(city);
                         }
-                        const combinedAddress = addressParts.join(', ') || 'לא צוינה כתובת';
 
-                        // 5. Resolve Responsible party
+                        const combinedAddress = addressParts.join(', ') || 'לא צוינה כתובת';
                         const responsible = row['אחראי'] || 'ללא שיוך';
 
-                        // Document Payload
                         const docRef = db.collection("voters").doc(voterId);
                         batch.set(docRef, {
                             id: voterId,
-                            name: fullName || 'בוחר ללא שם',
+                            name: fullName || 'ללא שם',
                             phone: phone,
                             address: combinedAddress,
                             responsible: responsible,
@@ -454,35 +368,29 @@
 
                     try {
                         await batch.commit();
-                        alert(`הפנקס יובא בהצלחה! ${count} בוחרים נרשמו במערכת.`);
+                        alert(`הפנקס יובא בהצלחה! ${count} בוחרים נרשמו.`);
                     } catch (err) {
-                        console.error("Error saving batch to Firebase: ", err);
-                        alert("שגיאה בשמירת הנתונים. אנא ודא שהרשאות ה-Firebase שלך תקינות.");
+                        console.error(err);
+                        alert("שגיאה בייבוא הנתונים.");
                     }
                 }
             });
         }
 
         async function clearDatabase() {
-            if (confirm("האם אתה בטוח לחלוטין שברצונך למחוק ולאפס את כל פנקס הבוחרים מהמערכת? פעולה זו אינה ניתנת לביטול!")) {
+            if (confirm("האם למחוק את כל הבוחרים מהמערכת?")) {
                 const snapshot = await db.collection("voters").get();
                 const batch = db.batch();
-                snapshot.docs.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
+                snapshot.docs.forEach((doc) => batch.delete(doc.ref));
                 await batch.commit();
-                alert("פנקס הבוחרים נמחק ואופס לחלוטין.");
+                alert("הפנקס אופס.");
             }
         }
 
-        // ==========================================
-        // 5. RENDERING & FILTERS
-        // ==========================================
+        // RENDER & FILTERS
         function populateResponsibleFilter() {
             const filterSelect = document.getElementById('responsible-filter');
             const responsibles = [...new Set(votersData.map(v => v.responsible))].filter(Boolean);
-            
-            // Clear but keep first
             filterSelect.innerHTML = '<option value="all">כל האחראים</option>';
             responsibles.forEach(r => {
                 const opt = document.createElement('option');
@@ -502,26 +410,17 @@
             const statusFilter = document.getElementById('status-filter').value;
             const responsibleFilter = document.getElementById('responsible-filter') ? document.getElementById('responsible-filter').value : 'all';
 
-            // Filter logic
             let filtered = votersData.filter(voter => {
-                // Check Role-based security (Non-admins can ONLY see their assigned voters)
                 if (currentUser.role !== 'admin') {
-                    if (!currentUser.allowed_responsibles.includes(voter.responsible)) {
-                        return false;
-                    }
+                    if (!currentUser.allowed_responsibles.includes(voter.responsible)) return false;
                 } else {
-                    // If Admin and specific responsible is filtered
-                    if (responsibleFilter !== 'all' && voter.responsible !== responsibleFilter) {
-                        return false;
-                    }
+                    if (responsibleFilter !== 'all' && voter.responsible !== responsibleFilter) return false;
                 }
 
-                // Status Filter
                 if (statusFilter === 'voted' && !voter.voted) return false;
                 if (statusFilter === 'not-voted' && voter.voted) return false;
                 if (statusFilter === 'reminder' && !voter.hasReminder) return false;
 
-                // Search Filter
                 const nameMatch = (voter.name || '').toLowerCase().includes(searchVal);
                 const phoneMatch = (voter.phone || '').includes(searchVal);
                 const addressMatch = (voter.address || '').toLowerCase().includes(searchVal);
@@ -530,48 +429,43 @@
                 return nameMatch || phoneMatch || addressMatch || idMatch;
             });
 
-            // Update Counts
             document.getElementById('displayed-count').textContent = filtered.length;
             document.getElementById('total-count').textContent = (currentUser.role === 'admin') ? votersData.length : votersData.filter(v => currentUser.allowed_responsibles.includes(v.responsible)).length;
 
             tableBody.innerHTML = '';
 
             if (filtered.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">לא נמצאו בוחרים התואמים את תנאי הסינון.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">לא נמצאו תוצאות.</td></tr>`;
                 return;
             }
 
             filtered.forEach(voter => {
                 const tr = document.createElement('tr');
-                tr.className = `cursor-pointer hover:bg-slate-50/80 transition-colors ${voter.hasReminder ? 'reminder-glow font-medium' : ''}`;
+                tr.className = `cursor-pointer hover:bg-gray-50 transition ${voter.hasReminder ? 'reminder-active' : ''}`;
                 tr.onclick = () => openVoterModal(voter.id);
 
-                // Checkbox status HTML
                 const statusHTML = voter.voted 
-                    ? `<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check ml-1"></i>הצביע</span>`
-                    : `<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-clock ml-1"></i>טרם הצביע</span>`;
+                    ? `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">הצביע</span>`
+                    : `<span class="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">טרם הצביע</span>`;
 
-                // Reminder HTML
                 const reminderHTML = voter.hasReminder
-                    ? `<span class="text-amber-600 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-bell ml-1 animate-bounce"></i> ${voter.reminderTime}</span>`
-                    : `<span class="text-slate-300">-</span>`;
+                    ? `<span class="text-amber-600 font-bold text-xs"><i class="fa-solid fa-bell ml-1"></i> ${voter.reminderTime}</span>`
+                    : `<span class="text-gray-300">-</span>`;
 
                 tr.innerHTML = `
-                    <td class="p-4 font-mono font-bold text-slate-500">${voter.id}</td>
-                    <td class="p-4 font-semibold text-slate-900">${voter.name}</td>
-                    <td class="p-4 text-slate-600 max-w-xs truncate">${voter.address}</td>
-                    <td class="p-4 font-mono text-slate-600">${voter.phone || 'אין טלפון'}</td>
-                    <td class="p-4 text-slate-600"><span class="bg-slate-100 px-2 py-1 rounded-lg text-xs font-medium">${voter.responsible}</span></td>
-                    <td class="p-4 text-center">${statusHTML}</td>
-                    <td class="p-4 text-center">${reminderHTML}</td>
+                    <td class="p-3 font-mono font-bold text-gray-500">${voter.id}</td>
+                    <td class="p-3 font-semibold text-gray-900">${voter.name}</td>
+                    <td class="p-3 text-gray-600">${voter.address}</td>
+                    <td class="p-3 font-mono text-gray-600">${voter.phone || ''}</td>
+                    <td class="p-3 text-gray-600">${voter.responsible}</td>
+                    <td class="p-3 text-center">${statusHTML}</td>
+                    <td class="p-3 text-center">${reminderHTML}</td>
                 `;
                 tableBody.appendChild(tr);
             });
         }
 
-        // ==========================================
-        // 6. DASHBOARD & GRAPHS
-        // ==========================================
+        // STATS & GRAPHS
         function updateDashboard() {
             if (currentUser.role !== 'admin') return;
 
@@ -585,45 +479,34 @@
             document.getElementById('stat-not-voted').textContent = notVoted;
             document.getElementById('stat-percent').textContent = `${percent}%`;
 
-            // Draw Charts
             drawCharts(voted, notVoted);
         }
 
         function drawCharts(voted, notVoted) {
-            // Pie Chart
             const ctxPie = document.getElementById('votersPieChart').getContext('2d');
             if (pieChart) pieChart.destroy();
             pieChart = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
-                    labels: ['הצביעו בפועל', 'טרם הצביעו'],
+                    labels: ['הצביעו', 'טרם הצביעו'],
                     datasets: [{
                         data: [voted, notVoted],
-                        backgroundColor: ['#22c55e', '#f59e0b'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
+                        backgroundColor: ['#22c55e', '#f59e0b']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Rubik' } } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // Bar Chart (By Responsible)
-            const responsiblesMap = {};
+            const resMap = {};
             votersData.forEach(v => {
-                if (!responsiblesMap[v.responsible]) {
-                    responsiblesMap[v.responsible] = { total: 0, voted: 0 };
-                }
-                responsiblesMap[v.responsible].total++;
-                if (v.voted) responsiblesMap[v.responsible].voted++;
+                if (!resMap[v.responsible]) resMap[v.responsible] = { total: 0, voted: 0 };
+                resMap[v.responsible].total++;
+                if (v.voted) resMap[v.responsible].voted++;
             });
 
-            const labels = Object.keys(responsiblesMap);
-            const totalData = labels.map(l => responsiblesMap[l].total);
-            const votedData = labels.map(l => responsiblesMap[l].voted);
+            const labels = Object.keys(resMap);
+            const totalData = labels.map(l => resMap[l].total);
+            const votedData = labels.map(l => resMap[l].voted);
 
             const ctxBar = document.getElementById('responsiblesBarChart').getContext('2d');
             if (barChart) barChart.destroy();
@@ -632,50 +515,26 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'סך הכל משויכים',
-                            data: totalData,
-                            backgroundColor: 'rgba(148, 163, 184, 0.5)',
-                            borderColor: 'rgb(148, 163, 184)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'הצביעו בפועל',
-                            data: votedData,
-                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                            borderColor: 'rgb(34, 197, 94)',
-                            borderWidth: 1
-                        }
+                        { label: 'משויכים', data: totalData, backgroundColor: '#94a3b8' },
+                        { label: 'הצביעו', data: votedData, backgroundColor: '#22c55e' }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Rubik' } } } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { font: { family: 'Rubik' } } },
-                        x: { ticks: { font: { family: 'Rubik' } } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // ==========================================
-        // 7. SMART MODAL WINDOW (VOTER CARD)
-        // ==========================================
+        // VOTER MODAL
         function openVoterModal(voterId) {
             const voter = votersData.find(v => v.id === voterId);
             if (!voter) return;
 
             currentEditingVoterId = voterId;
 
-            // Basic details
-            document.getElementById('modal-badge-id').textContent = `מזהה/קלפי: ${voter.id}`;
+            document.getElementById('modal-badge-id').textContent = `מזהה: ${voter.id}`;
             document.getElementById('modal-voter-name').textContent = voter.name;
             document.getElementById('modal-voter-address').textContent = voter.address;
-            document.getElementById('modal-voter-phone').textContent = voter.phone || 'אין מספר טלפון';
-            
-            // Call button href setup
+            document.getElementById('modal-voter-phone').textContent = voter.phone || 'אין טלפון';
+
             const callBtn = document.getElementById('modal-phone-call-btn');
             if (voter.phone) {
                 callBtn.href = `tel:${voter.phone}`;
@@ -685,15 +544,14 @@
                 callBtn.classList.add('opacity-50', 'pointer-events-none');
             }
 
-            // Votes toggle UI
             updateModalVoteButtonState(voter.voted);
 
-            // Set up Reminder Form Inputs (DYNAMIC CLOCK FIX)
+            // טעינת שדות תזכורת
             document.getElementById('reminder-desc-input').value = voter.reminderText || '';
             if (voter.hasReminder && voter.reminderTime) {
                 document.getElementById('reminder-time-input').value = voter.reminderTime;
             } else {
-                // Set clock to exactly 1 hour from now as default display
+                // דיפולט: שעה מעכשיו
                 const now = new Date();
                 now.setHours(now.getHours() + 1);
                 const HH = String(now.getHours()).padStart(2, '0');
@@ -701,11 +559,9 @@
                 document.getElementById('reminder-time-input').value = `${HH}:${MM}`;
             }
 
-            // Textarea notes
             document.getElementById('modal-voter-notes').value = voter.notes || '';
             document.getElementById('notes-status').textContent = 'שמור';
 
-            // Show modal container
             document.getElementById('voter-modal').classList.remove('hidden');
             document.getElementById('voter-modal').classList.add('flex');
         }
@@ -719,17 +575,16 @@
         function updateModalVoteButtonState(voted) {
             const lbl = document.getElementById('modal-voter-status-lbl');
             const btn = document.getElementById('modal-toggle-vote-btn');
-
             if (voted) {
                 lbl.textContent = "הצביע";
-                lbl.className = "font-bold mt-1 text-green-600";
-                btn.textContent = "בטל סימון הצבעה";
-                btn.className = "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold text-xs transition-colors";
+                lbl.className = "font-bold text-green-600";
+                btn.textContent = "בטל סימון";
+                btn.className = "bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold";
             } else {
                 lbl.textContent = "טרם הצביע";
-                lbl.className = "font-bold mt-1 text-amber-500";
-                btn.textContent = "סמן כ'הצביע'";
-                btn.className = "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-xs transition-colors";
+                lbl.className = "font-bold text-amber-500";
+                btn.textContent = "סמן כהצביע";
+                btn.className = "bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-green-700";
             }
         }
 
@@ -738,54 +593,34 @@
             const voter = votersData.find(v => v.id === currentEditingVoterId);
             if (!voter) return;
 
-            const nextState = !voter.voted;
-            
-            try {
-                // Update Firestore
-                await db.collection("voters").doc(currentEditingVoterId).update({
-                    voted: nextState
-                });
-                // Update Local UI instantly inside modal
-                updateModalVoteButtonState(nextState);
-            } catch (err) {
-                console.error("Error toggling vote status: ", err);
-            }
+            const next = !voter.voted;
+            await db.collection("voters").doc(currentEditingVoterId).update({ voted: next });
+            updateModalVoteButtonState(next);
         }
 
-        // ==========================================
-        // 8. DEBOUNCED AUTOMATIC SAVE FOR NOTES
-        // ==========================================
+        // DEBOUNCED NOTES
         function onNotesInput(text) {
             document.getElementById('notes-status').textContent = 'מקליד...';
             clearTimeout(debounceTimer);
-
             debounceTimer = setTimeout(async () => {
                 if (!currentEditingVoterId) return;
                 try {
-                    await db.collection("voters").doc(currentEditingVoterId).update({
-                        notes: text
-                    });
-                    document.getElementById('notes-status').textContent = 'שמור בשרת ✓';
-                } catch (err) {
-                    document.getElementById('notes-status').textContent = 'שגיאת שמירה ✗';
-                    console.error("Auto save failed: ", err);
+                    await db.collection("voters").doc(currentEditingVoterId).update({ notes: text });
+                    document.getElementById('notes-status').textContent = 'שמור ✓';
+                } catch {
+                    document.getElementById('notes-status').textContent = 'שגיאה ✗';
                 }
-            }, 800); // 800ms debounce
+            }, 800);
         }
 
-        // ==========================================
-        // 9. DYNAMIC REMINDER SYSTEM (CRITICAL FIXED)
-        // ==========================================
-        
-        // Dynamic Quick Offsets (Updates BOTH calculation AND UI visual clock input)
+        // REMINDER FIXES (DYNAMIC TIME UPDATER & FULL CLEAR)
         function setReminderQuickOffset(minutes) {
             const now = new Date();
             now.setMinutes(now.getMinutes() + minutes);
-            
             const HH = String(now.getHours()).padStart(2, '0');
             const MM = String(now.getMinutes()).padStart(2, '0');
             
-            // Critical Fix: Sync the UI clock element visibly so the user sees the real computed time
+            // עדכון השעון הויזואלי במודאל
             document.getElementById('reminder-time-input').value = `${HH}:${MM}`;
         }
 
@@ -795,89 +630,73 @@
             const descVal = document.getElementById('reminder-desc-input').value.trim();
 
             if (!timeVal) {
-                alert("אנא הזן שעה חוקית לתזכורת.");
+                alert("נא להזין שעת תזכורת.");
                 return;
             }
 
-            try {
-                await db.collection("voters").doc(currentEditingVoterId).update({
-                    reminderTime: timeVal,
-                    reminderText: descVal || "חזרה לבוחר",
-                    hasReminder: true
-                });
-                alert("התזכורת נשמרה בהצלחה!");
-                closeModal();
-            } catch (err) {
-                console.error("Failed to save reminder: ", err);
-            }
+            await db.collection("voters").doc(currentEditingVoterId).update({
+                reminderTime: timeVal,
+                reminderText: descVal || "חזרה לבוחר",
+                hasReminder: true
+            });
+            alert("תזכורת נשמרה!");
+            closeModal();
         }
 
-        // Critical Fix: Complete wipeout of all reminder fields from DB and UI state
         async function clearVoterReminder() {
             if (!currentEditingVoterId) return;
             try {
+                // מחיקה מוחלטת ומאובטחת של כל שדות התזכורת בשרת
                 await db.collection("voters").doc(currentEditingVoterId).update({
                     reminderTime: null,
                     reminderText: "",
                     hasReminder: false
                 });
 
-                // Clear input elements in modal visually
+                // ניקוי תיבות הטקסט במודאל
                 document.getElementById('reminder-desc-input').value = "";
+                document.getElementById('reminder-time-input').value = "";
                 
-                // Clear active trigger state to ensure it doesn't fire anymore
+                // הסרה ממערך הטריגרים הפעיל
                 delete activeReminders[currentEditingVoterId];
 
-                alert("התזכורת נמחקה בהצלחה!");
+                alert("התזכורת נמחקה לחלוטין!");
                 closeModal();
             } catch (err) {
-                console.error("Failed to delete reminder: ", err);
+                console.error("שגיאה במחיקת תזכורת:", err);
             }
         }
 
-        // Runs periodically to check and alert active alerts
         function checkRemindersClock() {
             const now = new Date();
             const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             votersData.forEach(voter => {
                 if (voter.hasReminder && voter.reminderTime === currentHHMM) {
-                    // Check if already fired at this specific minute
-                    const reminderKey = `${voter.id}_${voter.reminderTime}`;
-                    if (!activeReminders[reminderKey]) {
-                        activeReminders[reminderKey] = true; // Mark as fired
-                        
-                        // Play small beep or notify
-                        alert(`🔔 תזכורת לחזור לבוחר: ${voter.name}\nטלפון: ${voter.phone}\nהערה: ${voter.reminderText}`);
+                    const key = `${voter.id}_${voter.reminderTime}`;
+                    if (!activeReminders[key]) {
+                        activeReminders[key] = true;
+                        alert(`🔔 תזכורת: ${voter.name}\nטלפון: ${voter.phone || 'אין'}\nהערה: ${voter.reminderText}`);
                     }
                 }
             });
         }
 
-        // ==========================================
-        // 10. COMMUNICATIONS OUTWARD
-        // ==========================================
+        // COMMUNICATIONS
         function sendDriverWhatsApp() {
             const driverPhone = document.getElementById('driver-phone-input').value.trim();
             if (!driverPhone) {
-                alert("אנא הזן מספר טלפון של הנהג/ת אליו תרצה לשלוח את ההודעה.");
+                alert("אנא הזן מספר טלפון של הנהג.");
                 return;
             }
-
             const voter = votersData.find(v => v.id === currentEditingVoterId);
             if (!voter) return;
 
-            // Formulate Message
-            const msg = `שלום, נדרשת נסיעה עבור הבוחר/ת:\n\n👤 *שם:* ${voter.name}\n📍 *כתובת:* ${voter.address}\n📞 *טלפון:* ${voter.phone || 'לא קיים'}\n\nנא לאסוף אותו לקלפי בהקדם. תודה!`;
-            
-            // Clean phone format
-            let formattedPhone = driverPhone.replace(/\D/g, '');
-            if (formattedPhone.startsWith('05')) {
-                formattedPhone = '972' + formattedPhone.substr(1);
-            }
+            const msg = `נסיעה לבוחר לקלפי:\n\n👤 *שם:* ${voter.name}\n📍 *כתובת:* ${voter.address}\n📞 *טלפון:* ${voter.phone || 'לא קיים'}`;
+            let formatted = driverPhone.replace(/\D/g, '');
+            if (formatted.startsWith('05')) formatted = '972' + formatted.substr(1);
 
-            const waUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(msg)}`;
-            window.open(waUrl, '_blank');
+            window.open(`https://api.whatsapp.com/send?phone=${formatted}&text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function generateWhatsAppReport() {
@@ -887,31 +706,26 @@
             const voted = votersData.filter(v => v.voted).length;
             const percent = total > 0 ? Math.round((voted / total) * 100) : 0;
 
-            // Responsible Breakdown
             const resMap = {};
             votersData.forEach(v => {
-                if (!resMap[v.responsible]) {
-                    resMap[v.responsible] = { total: 0, voted: 0 };
-                }
+                if (!resMap[v.responsible]) resMap[v.responsible] = { total: 0, voted: 0 };
                 resMap[v.responsible].total++;
                 if (v.voted) resMap[v.responsible].voted++;
             });
 
-            let breakdownStr = '';
+            let breakdown = '';
             Object.keys(resMap).forEach(key => {
-                const subTotal = resMap[key].total;
-                const subVoted = resMap[key].voted;
-                const subPercent = subTotal > 0 ? Math.round((subVoted / subTotal) * 100) : 0;
-                breakdownStr += `🔹 *${key}:* ${subPercent}% (${subVoted}/${subTotal})\n`;
+                const subT = resMap[key].total;
+                const subV = resMap[key].voted;
+                const subP = subT > 0 ? Math.round((subV / subT) * 100) : 0;
+                breakdown += `🔹 *${key}:* ${subP}% (${subV}/${subT})\n`;
             });
 
             const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-            const report = `📊 *סטטוס חמ"ל בחירות נכון לשעה ${timeStr}* 📊\n\n🎯 *אחוז הצבעה כללי:* ${percent}% (${voted}/${total} מצביעים)\n\n📈 *סטטוס לפי אחראים שטח:*\n${breakdownStr}\nקדימה, להגביר מאמצים! לשירותכם, מערכת חמ"ל בחירות בזמן אמת. 🗳️`;
-
-            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
-            window.open(waUrl, '_blank');
+            const report = `📊 *סטטוס חמ"ל בחירות לשעה ${time}* 📊\n\n🎯 *אחוז הצבעה כללי:* ${percent}% (${voted}/${total} מצביעים)\n\n📈 *סטטוס לפי אחראים:*\n${breakdown}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`, '_blank');
         }
     </script>
 </body>
