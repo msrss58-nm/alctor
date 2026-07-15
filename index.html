@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חמ"ל בחירות מתקדם ומאובטח</title>
+    <title>מערכת שליטה ובקרה</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; color: #333; }
         .dashboard-grid { display: flex; gap: 20px; max-width: 1400px; margin: auto; flex-wrap: wrap; }
         .main-panel { flex: 3; min-width: 300px; }
         .side-panel { flex: 1.2; min-width: 300px; }
         
-        /* מסך נעילה */
-        #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .login-input { width: 90%; padding: 12px; font-size: 16px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; box-sizing: border-box; }
+        /* מסך נעילה דיסקרטי ומאובטח */
+        #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 40px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .login-input { width: 100%; padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; box-sizing: border-box; }
+        
+        /* שדה סיסמה עם כפתור עין */
+        .password-container { position: relative; width: 100%; margin-bottom: 20px; }
+        .password-container .login-input { margin-bottom: 0; padding-left: 45px; }
+        .toggle-password-btn { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 0; color: #65676b; }
         
         #main-dashboard { display: none; }
         
@@ -111,14 +116,19 @@
 </head>
 <body>
 
-<!-- מסך כניסה מאובטח ומעודכן -->
+<!-- מסך כניסה מאובטח ללא שום רמזים ועם כפתור הצגת סיסמה -->
 <div id="login-screen">
-    <h2>🔒 מערכת חמ"ל סגורה</h2>
-    <p>אנא הכנס פרטי גישה כדי לצפות בנתונים:</p>
-    <input type="text" id="user-input" class="login-input" placeholder="שם משתמש (ריק למנהל ראשי)">
-    <input type="password" id="pass-input" class="login-input" placeholder="קוד גישה סודי (למשל 1111)" maxlength="10">
-    <br>
-    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 90%;">התחבר למערכת</button>
+    <h2 style="margin-bottom: 10px; color: #1c1e21;">🔒 מערכת שליטה ובקרה</h2>
+    <p style="margin-bottom: 25px; color: #65676b; font-size: 14px;">נא להזין פרטי גישה מורשים:</p>
+    
+    <input type="text" id="user-input" class="login-input" placeholder="שם משתמש" autocomplete="username">
+    
+    <div class="password-container">
+        <input type="password" id="pass-input" class="login-input" placeholder="קוד גישה" maxlength="20" autocomplete="current-password">
+        <button type="button" class="toggle-password-btn" id="toggle-password-btn" title="הצג/הסתר קוד">👁️</button>
+    </div>
+    
+    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">התחבר</button>
     <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ פרטי גישה שגויים!</p>
 </div>
 
@@ -272,7 +282,7 @@
             <button class="modal-btn btn-voted" id="modal-btn-toggle-vote">👍 סימון כהצביע</button>
         </div>
 
-        <!-- כפתורי תזכורות מהירים וחדשים -->
+        <!-- כפתורי תזכורות מהירים -->
         <div style="font-size: 13px; font-weight: bold; color: #65676b; margin-bottom: 5px;">⏰ קבע תזכורת מהירה:</div>
         <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
             <button class="modal-btn btn-remind-15" id="modal-btn-remind-15">⏱️ 15 דק'</button>
@@ -288,14 +298,14 @@
         <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
         <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
         
-        <!-- כפתור שמירה ייעודי ויציב למניעת כפילויות ודריסות -->
+        <!-- כפתור שמירה ייעודי -->
         <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
         
         <div id="modal-save-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
     </div>
 </div>
 
-<!-- חלון ניהול משתמשים (Modal) - חדש למנהלים בלבד -->
+<!-- חלון ניהול משתמשים (Modal) - למנהלים בלבד -->
 <div id="users-modal" class="modal">
     <div class="modal-content" style="max-width: 600px;">
         <span class="close-modal" id="close-users-modal-btn">&times;</span>
@@ -305,12 +315,12 @@
             <strong style="display:block; margin-bottom: 10px;">➕ הוסף משתמש חדש</strong>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
                 <input type="text" id="new-user-name" placeholder="שם המשתמש/האחראי" style="flex:1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                <input type="password" id="new-user-pass" placeholder="קוד כניסה סודי" style="flex:1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="text" id="new-user-pass" placeholder="קוד כניסה סודי" style="flex:1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
             </div>
             <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
                 <div>
-                    <label><input type="radio" name="new-user-role" value="user" checked> אחראי שטח (רואה רק את שלו)</label>
-                    <label style="margin-right: 15px;"><input type="radio" name="new-user-role" value="admin"> מנהל (רואה הכל)</label>
+                    <label><input type="radio" name="new-user-role" value="user" checked> אחראי שטח</label>
+                    <label style="margin-right: 15px;"><input type="radio" name="new-user-role" value="admin"> מנהל</label>
                 </div>
                 <button class="modal-btn btn-save-all" id="btn-add-user" style="width: auto; padding: 8px 15px; margin: 0;">הוסף משתמש</button>
             </div>
@@ -362,38 +372,53 @@
     let pieChartInstance = null;
     let barChartInstance = null;
 
+    // הגדרת כפתור העין להצגת והסתרת סיסמה
+    const togglePasswordBtn = document.getElementById("toggle-password-btn");
+    const passwordInput = document.getElementById("pass-input");
+
+    togglePasswordBtn.addEventListener("click", () => {
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+        togglePasswordBtn.textContent = type === "password" ? "👁️" : "👁️‍🗨️";
+    });
+
     document.getElementById("login-btn").addEventListener("click", checkLogin);
     document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
+    document.getElementById("user-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
 
-    // פונקציית כניסה מאובטחת ומעודכנת
+    // פונקציית כניסה מאובטחת ומעודכנת (נחום משה / 585885#)
     async function checkLogin() {
         const username = document.getElementById("user-input").value.trim();
         const code = document.getElementById("pass-input").value.trim();
-        if (!code) return;
+        if (!code || !username) {
+            document.getElementById("login-error").textContent = "❌ יש להזין שם משתמש וקוד גישה!";
+            document.getElementById("login-error").style.display = "block";
+            return;
+        }
 
         try {
-            // תאימות כניסה מהירה למנהל הראשי עם הקוד 1111
-            if (code === "1111" && (username === "" || username === "מנהל ראשי")) {
-                sessionUser = { name: "מנהל ראשי", role: "admin", token: "1111" };
-                await setDoc(doc(db, "users", "1111"), {
-                    name: "מנהל ראשי",
+            // תאימות מלאה ומיידית למנהל הראשי החדש (נחום משה / 585885#)
+            if (username === "נחום משה" && code === "585885#") {
+                sessionUser = { name: "נחום משה", role: "admin", token: "585885#" };
+                await setDoc(doc(db, "users", "585885#"), {
+                    name: "נחום משה",
                     role: "admin",
-                    passcode: "1111"
+                    passcode: "585885#"
                 });
                 startDashboard();
                 return;
             }
 
-            // חיפוש ב-Firestore של משתמש עם קוד הגישה הזה
+            // חיפוש משתמשים אחרים בשרת
             const userDocRef = doc(db, "users", code);
             const userSnapshot = await getDoc(userDocRef);
 
             if (userSnapshot.exists()) {
                 const data = userSnapshot.data();
                 
-                // אימות כפול של שם המשתמש אם הוזן
-                if (username && data.name !== username) {
-                    document.getElementById("login-error").textContent = "❌ שם משתמש אינו תואם לקוד הגישה!";
+                // אימות שם המשתמש מול הקוד
+                if (data.name !== username) {
+                    document.getElementById("login-error").textContent = "❌ פרטי הגישה שהוזנו אינם נכונים!";
                     document.getElementById("login-error").style.display = "block";
                     return;
                 }
@@ -405,7 +430,7 @@
                 };
                 startDashboard();
             } else {
-                document.getElementById("login-error").textContent = "❌ פרטי גישה שגויים!";
+                document.getElementById("login-error").textContent = "❌ פרטי הגישה שהוזנו אינם נכונים!";
                 document.getElementById("login-error").style.display = "block";
             }
         } catch (error) {
@@ -438,7 +463,6 @@
             startCountdown();
         });
 
-        // האזנה קבועה לבוחרים מ-Firebase
         onSnapshot(collection(db, "voters"), (snapshot) => {
             const voters = [];
             snapshot.forEach(doc => {
@@ -617,7 +641,6 @@
     });
 
     function renderDashboard() {
-        // סינון אבטחתי קשיח: אחראי שטח רואה אך ורק את הבוחרים המשויכים אליו
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
         
@@ -626,7 +649,6 @@
                 if (activeFilter === "all") return true;
                 return v.manager === activeFilter;
             }
-            // אם המשתמש הוא "אחראי", נבדוק התאמה מוחלטת לשם המשתמש שלו
             return v.manager === sessionUser.name;
         });
 
@@ -709,7 +731,6 @@
         });
     }
 
-    /* --- מערכת חלון כרטיס בוחר חכם (Modal) --- */
     const modal = document.getElementById("voter-modal");
     
     function openVoterModal(voter) {
@@ -852,7 +873,6 @@
 
     document.getElementById("close-users-modal-btn").addEventListener("click", () => { usersModal.style.display = "none"; });
 
-    // העלאת משתמשים מהשרת והצגתם בטבלה
     async function loadUsersTable() {
         const tbody = document.getElementById("users-table-body");
         tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>טוען משתמשים...</td></tr>";
@@ -872,7 +892,7 @@
                     <td>${roleText}</td>
                     <td><code>${userId}</code></td>
                     <td>
-                        ${userId !== "1111" ? `<button class="modal-btn btn-delete-reminder" style="padding:4px 8px; font-size:11px;" onclick="window.deleteUserFromTable('${userId}')">🗑️ מחק</button>` : '<span style="color:#65676b; font-size:11px;">מוגן</span>'}
+                        ${userId !== "585885#" ? `<button class="modal-btn btn-delete-reminder" style="padding:4px 8px; font-size:11px;" onclick="window.deleteUserFromTable('${userId}')">🗑️ מחק</button>` : '<span style="color:#65676b; font-size:11px;">מוגן</span>'}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -882,7 +902,6 @@
         }
     }
 
-    // הוספת משתמש חדש
     document.getElementById("btn-add-user").addEventListener("click", async () => {
         const name = document.getElementById("new-user-name").value.trim();
         const code = document.getElementById("new-user-pass").value.trim();
@@ -894,7 +913,6 @@
         }
 
         try {
-            // ה-ID של המסמך ב-users יהיה קוד הגישה עצמו
             await setDoc(doc(db, "users", code), {
                 name: name,
                 role: role,
@@ -910,7 +928,6 @@
         }
     });
 
-    // הגדרת פונקציית מחיקה גלובלית על החלון
     window.deleteUserFromTable = async function(userId) {
         if (!confirm("האם למחוק משתמש זה לצמיתות?")) return;
         try {
@@ -921,8 +938,6 @@
             alert("שגיאה במחיקת המשתמש!");
         }
     };
-
-    /* --- סוף מערכת ניהול משתמשים --- */
 
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
