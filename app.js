@@ -240,18 +240,32 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                 if (fullName) {
                     const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                     const masad = row["מסד"] || "";
-                    let address = "";
-                    if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
-                        address = row["כתובת"].trim();
-                    } else {
-                        const street = row["רחוב"] || "";
-                        const houseNum = row["מס בית"] || row["כתובת"] || "";
-                        const city = row["עיר"] || "";
-                        address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
-                        if (address === ",") address = "";
+                    
+                    // עיבוד וניקוי חכם של כתובת עם תמיכה רחבה בשמות עמודות יישוב/עיר
+                    const street = (row["רחוב"] || "").trim();
+                    const houseNum = (row["מס בית"] || row["כתובת"] || "").trim();
+                    const city = (row["עיר"] || row["ישוב"] || row["יישוב"] || "").trim();
+
+                    let addressParts = [];
+                    if (street) addressParts.push(street);
+                    
+                    if (houseNum && isNaN(houseNum)) {
+                        // אם שדה כתובת הבית הוא טקסט מלא (למשל כתובת מלאה שהוכנסה שם במקום מספר)
+                        addressParts = [houseNum];
+                    } else if (houseNum) {
+                        // אם זה מספר בית תקין, נחבר אותו לרחוב
+                        if (addressParts.length > 0) {
+                            addressParts[addressParts.length - 1] += ` ${houseNum}`;
+                        } else {
+                            addressParts.push(houseNum);
+                        }
                     }
+                    if (city) addressParts.push(city);
+
+                    const address = addressParts.join(", ").replace(/\s+/g, " ").trim();
                     const phone = row["טלפון"] || row["נייד"] || "";
                     const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
+                    
                     batch.set(doc(db, "voters", voterId), {
                         masad: masad,
                         name: fullName,
