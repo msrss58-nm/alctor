@@ -241,7 +241,6 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                     const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                     const masad = row["מסד"] || "";
                     
-                    // --- מנגנון חכם למציאת עמודות גם עם רווחים נסתרים ---
                     const keys = Object.keys(row);
                     
                     // חיפוש עמודת עיר/ישוב/יישוב
@@ -261,14 +260,21 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
 
                     // חיפוש עמודת טלפון / נייד
                     const phoneKey = keys.find(k => k.trim() === "טלפון" || k.trim() === "נייד");
-                    const phone = phoneKey ? (row[phoneKey] || "").trim() : "";
+                    let phone = phoneKey ? (row[phoneKey] || "").trim() : "";
+
+                    // --- תיקון והוספת אפס מוביל למספרי טלפון ---
+                    if (phone) {
+                        // אם האקסל השמיט את ה-0 והמספר מתחיל ישירות ב-5 (למשל: 525689467)
+                        if (phone.startsWith("5") && phone.length === 9) {
+                            phone = "0" + phone;
+                        }
+                    }
 
                     // בנייה אסתטית של הכתובת ללא פסיקים ורווחים מיותרים
                     let addressParts = [];
                     if (street) addressParts.push(street);
                     
                     if (houseNum && isNaN(houseNum)) {
-                        // אם שדה הבית מכיל כבר כתובת טקסט מלאה
                         addressParts = [houseNum];
                     } else if (houseNum) {
                         if (addressParts.length > 0) {
