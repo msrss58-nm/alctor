@@ -3,759 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת שליטה ובקרה</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <title>חמ"ל בחירות - מערכת שליטה ובקרה</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Heebo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --bg-color: #e9ecef;
-            --card-bg: #ffffff;
-            --primary-blue: #1e74fd;
-            --dark-blue: #104193;
-            --text-color: #333;
-            --border-radius: 12px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            direction: rtl;
+            font-family: 'Heebo', sans-serif;
+            background-color: #f3f4f6;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* כותרת עליונה כחולה עם שעון */
-        .top-banner {
-            background: linear-gradient(135deg, #1e74fd 0%, #0d5bcf 100%);
-            color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            box-shadow: var(--shadow);
-            margin-bottom: 25px;
-        }
-
-        .settings-btn-top {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 8px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .banner-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .countdown-clock {
-            font-size: 40px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        #timer-settings-box {
-            display: none;
-            margin-top: 10px;
-        }
-
-        #timer-settings-box input {
-            padding: 5px;
-            border-radius: 4px;
-            border: none;
-        }
-
-        /* כותרת משנה מתחת לבאנר */
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .system-title-box h1 {
-            font-size: 28px;
-            color: #1a1a1a;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .system-title-box p {
-            color: #6c757d;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .admin-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-admin-action {
-            padding: 10px 18px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: var(--shadow);
-            transition: transform 0.1s;
-        }
-
-        .btn-admin-action:active {
-            transform: scale(0.98);
-        }
-
-        .btn-whatsapp { background-color: #25d366; color: white; }
-        .btn-users { background-color: #7014a9; color: white; }
-
-        /* אזור העלאת קבצים ואיפוס */
-        .file-control-box {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .btn-load-csv {
-            background-color: #1e74fd;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-delete-all {
-            background-color: #ff3b30;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* גריד ראשי של שתי עמודות */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-
-        @media (max-width: 992px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* קוביות סטטיסטיקה */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #fff;
-            border-radius: var(--border-radius);
-            padding: 15px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1e74fd;
-        }
-
-        /* פרוגרס בר קצב התקדמות */
-        .progress-box {
-            background: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .progress-bg {
-            background-color: #e9ecef;
-            height: 18px;
-            border-radius: 9px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #28a745, #218838);
-            height: 100%;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .progress-inner-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 0; left: 0;
-            line-height: 18px;
-            font-size: 11px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        /* סרגל חיפוש וסינון */
-        .filters-toolbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-wrapper {
-            position: relative;
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .search-wrapper input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 14px;
-            background-color: #fff;
-        }
-
-        .search-icon-placeholder {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-
-        .filter-btn-outline {
-            background-color: #fff;
-            border: 1px solid #ced4da;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 500;
-        }
-
-        .filter-btn-outline.active {
-            background-color: #fff0f2;
-            border-color: #f5c2c7;
-            color: #842029;
-        }
-
-        /* סגנון ספציפי עבור כפתור התזכורות החדש */
-        #reminders-toggle.active {
-            background-color: #fff3cd;
-            border-color: #ffecb5;
-            color: #664d03;
-        }
-
-        .select-manager {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            background-color: white;
-            font-size: 14px;
-        }
-
-        /* טבלה */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: right;
-            font-size: 14px;
-        }
-
-        th {
-            color: #6c757d;
-            font-weight: 500;
-            padding: 12px;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #dee2e6;
-            vertical-align: middle;
-        }
-
-        .voter-row {
-            cursor: pointer;
-        }
-
-        .voter-row:hover {
-            background-color: #f8f9fa;
-        }
-
-        /* צבעי שורות מיוחדות */
-        .row-voted {
-            background-color: #e2f0d9 !important;
-        }
-
-        .row-reminder {
-            background-color: #fff2cc !important;
-        }
-
-        /* כפתורי סטטוס בטבלה */
-        .status-pill {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .status-pill.voted { background-color: #d4edda; color: #155724; }
-        .status-pill.not-voted { background-color: #e2e3e5; color: #383d41; }
-        .status-pill.reminder { background-color: #fff3cd; color: #856404; }
-
-        /* מסך התחברות */
-        #login-screen {
-            max-width: 400px;
-            margin: 80px auto;
-        }
-
-        .input-field-group {
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .input-field-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .input-field-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .btn-submit-login {
-            width: 100%;
-            background-color: var(--primary-blue);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-submit-login:hover {
-            background-color: var(--dark-blue);
-        }
-
-        /* מודלים ופופאפים */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-body {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px; left: 15px;
-            background: none; border: none; font-size: 24px; cursor: pointer;
-        }
-
-        .modal-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-modal {
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-modal-vote { background-color: #28a745; color: white; }
-        .btn-modal-unvote { background-color: #6c757d; color: white; }
-        .btn-modal-call { background-color: #25d366; color: white; }
-        .btn-modal-drive { background-color: #ffc107; color: black; }
-        .btn-modal-save { background-color: #1e74fd; color: white; }
-
-        .quick-reminder-section {
-            margin-top: 12px;
-        }
-
-        .quick-reminder-btns {
-            display: flex;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .btn-quick-rem {
-            flex: 1;
-            padding: 6px;
-            background-color: #f8f9fa;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .admin-section-only { display: none; }
-        body:not(.user-mode-active) .admin-section-only { display: block; }
-        body:not(.user-mode-active) .admin-th-td { display: table-cell; }
-        body.user-mode-active .admin-th-td { display: none; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-6">
 
-    <div class="container">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-        <!-- ==================== מסך כניסה ==================== -->
-        <div id="login-screen" class="card">
-            <h2 style="text-align: center; margin-bottom: 20px;">🔐 כניסה למערכת שליטה</h2>
-            <div class="input-field-group">
-                <label>שם משתמש:</label>
-                <input type="text" id="user-input" placeholder="שם משתמש">
+        <!-- באנר עליון (שעון ונעילה) -->
+        <div class="bg-blue-600 text-white rounded-2xl p-6 shadow-md text-center relative overflow-hidden">
+            <!-- כפתור הגדרות קטן בצד שמאל למעלה -->
+            <button class="absolute left-4 top-4 text-white/80 hover:text-white transition">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+            
+            <h2 class="text-lg font-bold flex items-center justify-center gap-2 mb-2">
+                <i class="fa-regular fa-clock"></i> הזמן הנותר לסגירת הקלפיות
+            </h2>
+            <h1 class="text-4xl md:text-5xl font-black tracking-wider mb-3" id="countdown-timer">19:28:24</h1>
+            
+            <div class="inline-flex items-center gap-2 bg-blue-800/60 px-4 py-1.5 rounded-lg text-sm">
+                <span>שעת נעילה חדשה:</span>
+                <span class="font-bold">10:00</span>
+                <span>⏰</span>
             </div>
-            <div class="input-field-group">
-                <label>קוד גישה:</label>
-                <input type="password" id="pass-input" placeholder="קוד סודי">
-                <button type="button" id="toggle-password-btn" style="position: absolute; left: 10px; top: 35px; background: none; border: none; cursor: pointer; font-size: 18px;">👁️</button>
-            </div>
-            <button id="login-btn" class="btn-submit-login">התחבר</button>
-            <div id="login-error" style="color: red; margin-top: 10px; text-align: center; display: none; font-weight: bold;"></div>
         </div>
 
-        <!-- ==================== דאשבורד ראשי ==================== -->
-        <div id="main-dashboard" style="display: none;">
+        <!-- שורת כפתורי ניהול עליונה -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <!-- כפתורי פעולה בצד ימין -->
+            <div class="flex flex-wrap items-center gap-3">
+                <button class="bg-[#25D366] hover:bg-[#20ba59] text-white font-bold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> שלח דוח חמ"ל בווטסאפ
+                </button>
+                <button class="bg-[#6B21A8] hover:bg-[#581c87] text-white font-bold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-users-gear"></i> ניהול משתמשים
+                </button>
+                <!-- כפתור חדש: תזכורות פעילות -->
+                <button class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                    <i class="fa-regular fa-bell animate-swing"></i> תזכורות פעילות
+                </button>
+            </div>
+
+            <!-- כותרת המערכת משמאל -->
+            <div class="text-right">
+                <h1 class="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-2 justify-end">
+                    <span>חמ"ל בחירות - מערכת שליטה</span>
+                    <span class="text-blue-600"><i class="fa-solid fa-chart-column"></i></span>
+                </h1>
+                <p class="text-xs text-slate-500 mt-1">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+            </div>
+        </div>
+
+        <!-- אזור התוכן המרכזי - חלוקה ל-2 עמודות -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            <!-- באנר כחול עליון ושעון -->
-            <div class="top-banner">
-                <button id="toggle-settings-btn" class="settings-btn-top">⚙️</button>
-                <div class="banner-title">
-                    <span>⏱️ הזמן הנותר לסגירת הקלפיות</span>
+            <!-- עמודה ימנית (גרפים וסיכומים - 4 מתוך 12) -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- כרטיס יחס הצבעה -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 border-b pb-3 mb-4">
+                        <i class="fa-solid fa-chart-pie text-blue-500"></i> יחס הצבעה
+                    </h3>
+                    <div class="flex justify-center py-4">
+                        <!-- ייצוג גרפי דמוי דונאט -->
+                        <div class="relative w-40 h-40 flex items-center justify-center rounded-full border-[14px] border-slate-100" style="background: radial-gradient(white 55%, transparent 56%), conic-gradient(#22c55e 0% 6%, #e2e8f0 6% 100%);">
+                            <span class="text-3xl font-black text-slate-800">6%</span>
+                        </div>
+                    </div>
+                    <!-- מקרא -->
+                    <div class="flex items-center justify-center gap-6 mt-2 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                            <span class="text-slate-600 font-medium">הצביעו</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 bg-slate-200 rounded-full"></span>
+                            <span class="text-slate-500">טרם הצביעו</span>
+                        </div>
+                    </div>
                 </div>
-                <div id="countdown-display" class="countdown-clock">00:00:00</div>
-                <div id="timer-settings-box">
-                    <input type="time" id="close-time-picker" value="22:00">
+
+                <!-- כרטיס סיכום הספקי אחראים -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 border-b pb-3 mb-4">
+                        <i class="fa-solid fa-list-check text-blue-500"></i> סיכום הספקי אחראים
+                    </h3>
+                    <!-- גרף עמודות אנכי פשוט -->
+                    <div class="flex items-end justify-between h-32 px-4 pt-4">
+                        <div class="flex flex-col items-center gap-2 w-full">
+                            <div class="w-8 bg-blue-500 rounded-t-md" style="height: 60px;"></div>
+                            <span class="text-xs text-slate-500">10</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 w-full">
+                            <div class="w-8 bg-blue-500 rounded-t-md" style="height: 80px;"></div>
+                            <span class="text-xs text-slate-500">8</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 w-full">
+                            <div class="w-8 bg-blue-500 rounded-t-md" style="height: 40px;"></div>
+                            <span class="text-xs text-slate-500">6</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 w-full">
+                            <div class="w-8 bg-blue-500 rounded-t-md" style="height: 20px;"></div>
+                            <span class="text-xs text-slate-500">4</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- כותרת ראשית של המערכת וכפתורי חמ"ל -->
-            <div class="header-section">
-                <div class="system-title-box">
-                    <h1>חמ"ל בחירות - מערכת שליטה 📊</h1>
-                    <p>ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
-                </div>
-                <div class="admin-buttons admin-section-only">
-                    <button id="whatsapp-report-btn" class="btn-admin-action btn-whatsapp">💬 שלח דוח חמ"ל בווטסאפ</button>
-                    <button id="manage-users-btn" class="btn-admin-action btn-users">👤 ניהול משתמשים 🔑</button>
-                </div>
-            </div>
-
-            <!-- כפתורי טעינת פנקס ואיפוס -->
-            <div class="file-control-box admin-section-only">
-                <button id="delete-all-btn" class="btn-delete-all">🗑️ מחק פנקס בוחרים</button>
-                <label class="btn-load-csv">
-                    📥 טען קובץ בוחרים (CSV)
-                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-                </label>
-            </div>
-
-            <!-- אזור התוכן הראשי (גריד 2 עמודות) -->
-            <div class="main-grid">
+            <!-- עמודה שמאלית (פנקס בוחרים וסטטיסטיקה - 8 מתוך 12) -->
+            <div class="lg:col-span-8 space-y-6">
                 
-                <!-- עמודה ימנית: גרפים ויחס הצבעה -->
-                <div class="sidebar-charts">
-                    <div class="card">
-                        <h3>📊 יחס הצבעה</h3>
-                        <div style="height: 200px; position: relative;">
-                            <canvas id="votingPieChart"></canvas>
-                        </div>
+                <!-- שורת כפתורי CSV (מיושרים לשמאל, ישירות מעל אזור החיפוש) -->
+                <div class="flex items-center justify-end gap-3">
+                    <button class="bg-[#EF4444] hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> מחק פנקס בוחרים
+                    </button>
+                    <button class="bg-[#2563EB] hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv"></i> טען קובץ בוחרים (CSV)
+                    </button>
+                </div>
+
+                <!-- שורת סינונים וחיפוש (חיפוש בימין, כפתורים בשמאל) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-3">
+                    <!-- שדה חיפוש (רחב ובצד ימין) -->
+                    <div class="relative w-full md:flex-1">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" placeholder="חפש לפי שם, כתובת, מסד או טלפון..." 
+                               class="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
                     </div>
-                    <div class="card admin-section-only">
-                        <h3>📊 סיכום הספקי אחראים</h3>
-                        <div style="height: 200px; position: relative;">
-                            <canvas id="managersBarChart"></canvas>
-                        </div>
+
+                    <!-- כפתור סינון הצבעה (במרכז/שמאל) -->
+                    <button class="w-full md:w-auto bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium px-4 py-2.5 rounded-xl border border-slate-200 text-sm flex items-center justify-center gap-2 transition">
+                        <span>הצג רק מי שטרם הצביע</span>
+                        <span>📞</span>
+                    </button>
+
+                    <!-- תפריט בחירת אחראי (בצד שמאל) -->
+                    <div class="relative w-full md:w-48">
+                        <select class="w-full appearance-none bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium pr-4 pl-10 py-2.5 rounded-xl border border-slate-200 text-sm text-right focus:outline-none">
+                            <option>כל האחראים 🟢</option>
+                            <option>אבי</option>
+                            <option>יוסי</option>
+                        </select>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </span>
                     </div>
                 </div>
 
-                <!-- עמודה שמאלית: נתונים וטבלה -->
-                <div class="content-table-area">
+                <!-- התקדמות ההצבעה -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                    <div class="flex items-center justify-between text-sm font-bold text-slate-700">
+                        <span>קצב התקדמות ההצבעות בחמ"ל</span>
+                        <span>6%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden relative flex items-center">
+                        <div class="bg-green-500 h-full rounded-full transition-all duration-500" style="width: 6%;"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-700">3 מתוך 50 הצביעו</span>
+                    </div>
+                </div>
+
+                <!-- קוביות סטטיסטיקה מהירה (3 קוביות) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">סה"כ בוחרים</span>
+                        <span class="text-2xl font-black text-slate-800">50</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">סה"כ הצביעו</span>
+                        <span class="text-2xl font-black text-slate-800">3</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">אחוז הצבעה</span>
+                        <span class="text-2xl font-black text-blue-600">6%</span>
+                    </div>
+                </div>
+
+                <!-- טבלת פנקס בוחרים פעיל -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-blue-500"></i> פנקס בוחרים פעיל
+                        </h3>
+                    </div>
                     
-                    <!-- התקדמות כללית -->
-                    <div class="progress-box">
-                        <div class="progress-header">
-                            <span>📈 קצב ההתקדמות וההצבעות בחמ"ל</span>
-                            <span id="progress-percentage-label">0%</span>
-                        </div>
-                        <div class="progress-bg">
-                            <div id="voters-progress-bar" class="progress-fill"></div>
-                            <div id="progress-bar-text" class="progress-inner-text">0 מתוך 0 הצביעו</div>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-55 border-b border-slate-100 text-slate-500 text-xs font-bold">
+                                    <th class="p-4 w-12 text-center">מסד</th>
+                                    <th class="p-4">שם מלא</th>
+                                    <th class="p-4">כתובת</th>
+                                    <th class="p-4">טלפון</th>
+                                    <th class="p-4">אחראי</th>
+                                    <th class="p-4">הערות אחרונות</th>
+                                    <th class="p-4 text-center">סטטוס</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-slate-700 divide-y divide-slate-100">
+                                <!-- שורה 1 -->
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="p-4 text-center font-bold text-slate-400">1</td>
+                                    <td class="p-4 font-bold text-slate-800">אברהם יצחק</td>
+                                    <td class="p-4 text-slate-500">משה דיין 1, מודיעין</td>
+                                    <td class="p-4 font-mono text-slate-600">052568467</td>
+                                    <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium">אבי</span></td>
+                                    <td class="p-4 text-slate-400">-</td>
+                                    <td class="p-4 text-center">
+                                        <span class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
+                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> הצביע
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- שורה 2 -->
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="p-4 text-center font-bold text-slate-400">2</td>
+                                    <td class="p-4 font-bold text-slate-800">אלי משה</td>
+                                    <td class="p-4 text-slate-500">כחלחל 2, פתח תקווה</td>
+                                    <td class="p-4 font-mono text-slate-600">0504520253</td>
+                                    <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium">אבי</span></td>
+                                    <td class="p-4 text-slate-400">-</td>
+                                    <td class="p-4 text-center">
+                                        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200">
+                                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span> התבצע
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- שורה 3 -->
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="p-4 text-center font-bold text-slate-400">3</td>
+                                    <td class="p-4 font-bold text-slate-800">ירון למה</td>
+                                    <td class="p-4 text-slate-500">כנפי 3, בני ברק</td>
+                                    <td class="p-4 font-mono text-slate-600">0501234567</td>
+                                    <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium">אבי</span></td>
+                                    <td class="p-4 text-slate-400">-</td>
+                                    <td class="p-4 text-center">
+                                        <span class="inline-flex items-center gap-1 bg-slate-50 text-slate-500 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
+                                            טרם הצביע
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-                    <!-- קוביות סיכום -->
-                    <div class="stats-row">
-                        <div class="stat-card">
-                            <div class="label">סה"כ בוחרים</div>
-                            <div id="total-voters" class="value">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">סה"כ הצביעו</div>
-                            <div id="total-voted" class="value">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">אחוז הצבעה</div>
-                            <div id="voting-percentage" class="value">0%</div>
-                        </div>
-                    </div>
-
-                    <!-- טבלת הספקי מנהלים (לאדמין) -->
-                    <div class="card admin-section-only" style="margin-bottom: 20px;">
-                        <h3>👥 סיכום מנהלי שטח</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>שם המנהל</th>
-                                        <th>שוייכו</th>
-                                        <th>הצביעו</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="managers-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- פנקס בוחרים פעיל והסינונים -->
-                    <div class="card">
-                        <h3>📓 פנקס בוחרים פעיל</h3>
-                        
-                        <div class="filters-toolbar">
-                            <div class="search-wrapper">
-                                <input type="text" id="search-bar" placeholder="🔍 חפש לפי שם, כתובת, מסד או טלפון...">
-                            </div>
-                            
-                            <button id="unvoted-toggle" class="filter-btn-outline">📞 הצג רק מי שטרם הצביע</button>
-                            
-                            <!-- כפתור הסינון המהיר החדש - בעיצוב המקורי והמדויק -->
-                            <button id="reminders-toggle" class="filter-btn-outline">⏰ תזכורות פעילות</button>
-                            
-                            <select id="manager-filter" class="select-manager admin-section-only">
-                                <option value="all">🌍 כל האחראים</option>
-                            </select>
-                        </div>
-
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>מסד</th>
-                                        <th>שם מלא</th>
-                                        <th>כתובת</th>
-                                        <th>טלפון</th>
-                                        <th class="admin-th-td">אחראי</th>
-                                        <th>הערות אחרונות</th>
-                                        <th>סטטוס</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="voters-table-body">
-                                    <tr>
-                                        <td colspan="7" style="text-align: center; color: #6c757d; padding: 20px;">טוען נתונים...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
                 </div>
+
             </div>
 
         </div>
+
     </div>
 
-    <!-- ==================== מודל כרטיס בוחר ==================== -->
-    <div id="voter-modal" class="modal-overlay">
-        <div class="modal-body">
-            <button id="close-modal-btn" class="close-modal">&times;</button>
-            <h2 id="modal-voter-name" style="color: var(--primary-blue); margin-bottom: 15px;">שם הבוחר</h2>
-            
-            <p style="margin-bottom: 8px;">📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span></p>
-            <p style="margin-bottom: 8px;">📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span></p>
-            <p style="margin-bottom: 15px;">👤 <strong>אחראי שטח:</strong> <span id="modal-voter-manager">-</span></p>
-            
-            <div style="margin-bottom: 15px; text-align: right;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">📝 הערות:</label>
-                <textarea id="modal-notes-input" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 8px; resize: vertical;"></textarea>
-            </div>
-
-            <div class="quick-reminder-section">
-                <label style="font-size: 13px; font-weight: bold; color: #555;">⏰ הגדר תזכורת מהירה לחזרה לבוחר:</label>
-                <div class="quick-reminder-btns">
-                    <button id="modal-btn-remind-15" class="btn-quick-rem">15 דק'</button>
-                    <button id="modal-btn-remind-30" class="btn-quick-rem">30 דק'</button>
-                    <button id="modal-btn-remind-60" class="btn-quick-rem">שעה</button>
-                    <button id="modal-btn-delete-reminder" class="btn-quick-rem" style="color: red; background: #fff0f2;">❌ מחק</button>
-                </div>
-            </div>
-
-            <div id="modal-save-status" style="margin-top: 10px; font-weight: bold; text-align: center; font-size: 13px;"></div>
-
-            <div class="modal-actions">
-                <button id="modal-btn-toggle-vote" class="btn-modal btn-modal-vote">👍 סימון כהצביע</button>
-                <button id="modal-btn-call" class="btn-modal btn-modal-call">📞 חיוג מהיר</button>
-                <button id="modal-btn-drive" class="btn-modal btn-modal-drive">🚗 הסעה</button>
-                <button id="modal-btn-save-all" class="btn-modal btn-modal-save">💾 שמור הכל</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== מודל ניהול משתמשים ==================== -->
-    <div id="users-modal" class="modal-overlay">
-        <div class="modal-body" style="max-width: 550px;">
-            <button id="close-users-modal-btn" class="close-modal">&times;</button>
-            <h2 style="margin-bottom: 15px;">👥 ניהול מורשי גישה</h2>
-            
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #dee2e6;">
-                <h4 style="margin-bottom: 10px;">➕ הוסף משתמש חדש</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="text" id="new-user-name" placeholder="שם מלא" style="padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
-                    <input type="text" id="new-user-pass" placeholder="קוד כניסה" style="padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
-                </div>
-                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <label><input type="radio" name="new-user-role" value="user" checked> אחראי</label>
-                        <label style="margin-right: 10px;"><input type="radio" name="new-user-role" value="admin"> מנהל</label>
-                    </div>
-                    <button id="btn-add-user" class="btn-modal-save" style="border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">הוסף</button>
-                </div>
-            </div>
-
-            <div style="max-height: 200px; overflow-y: auto;">
-                <table style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>שם</th>
-                            <th>הרשאה</th>
-                            <th>קוד גישה</th>
-                            <th>פעולה</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="app.js"></script>
 </body>
 </html>
