@@ -241,19 +241,36 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                     const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                     const masad = row["מסד"] || "";
                     
-                    // עיבוד וניקוי חכם של כתובת עם תמיכה רחבה בשמות עמודות יישוב/עיר
-                    const street = (row["רחוב"] || "").trim();
-                    const houseNum = (row["מס בית"] || row["כתובת"] || "").trim();
-                    const city = (row["עיר"] || row["ישוב"] || row["יישוב"] || "").trim();
+                    // --- מנגנון חכם למציאת עמודות גם עם רווחים נסתרים ---
+                    const keys = Object.keys(row);
+                    
+                    // חיפוש עמודת עיר/ישוב/יישוב
+                    const cityKey = keys.find(k => {
+                        const cleanKey = k.trim();
+                        return cleanKey === "עיר" || cleanKey === "ישוב" || cleanKey === "יישוב";
+                    });
+                    const city = cityKey ? (row[cityKey] || "").trim() : "";
 
+                    // חיפוש עמודת רחוב
+                    const streetKey = keys.find(k => k.trim() === "רחוב");
+                    const street = streetKey ? (row[streetKey] || "").trim() : "";
+
+                    // חיפוש עמודת מספר בית / כתובת
+                    const houseKey = keys.find(k => k.trim() === "מס בית" || k.trim() === "כתובת");
+                    const houseNum = houseKey ? (row[houseKey] || "").trim() : "";
+
+                    // חיפוש עמודת טלפון / נייד
+                    const phoneKey = keys.find(k => k.trim() === "טלפון" || k.trim() === "נייד");
+                    const phone = phoneKey ? (row[phoneKey] || "").trim() : "";
+
+                    // בנייה אסתטית של הכתובת ללא פסיקים ורווחים מיותרים
                     let addressParts = [];
                     if (street) addressParts.push(street);
                     
                     if (houseNum && isNaN(houseNum)) {
-                        // אם שדה כתובת הבית הוא טקסט מלא (למשל כתובת מלאה שהוכנסה שם במקום מספר)
+                        // אם שדה הבית מכיל כבר כתובת טקסט מלאה
                         addressParts = [houseNum];
                     } else if (houseNum) {
-                        // אם זה מספר בית תקין, נחבר אותו לרחוב
                         if (addressParts.length > 0) {
                             addressParts[addressParts.length - 1] += ` ${houseNum}`;
                         } else {
@@ -263,7 +280,6 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                     if (city) addressParts.push(city);
 
                     const address = addressParts.join(", ").replace(/\s+/g, " ").trim();
-                    const phone = row["טלפון"] || row["נייד"] || "";
                     const voterId = "voter_" + btoa(unescape(encodeURIComponent(fullName + "_" + masad))).replace(/[^a-zA-Z0-9]/g, "");
                     
                     batch.set(doc(db, "voters", voterId), {
@@ -271,7 +287,7 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                         name: fullName,
                         address: address,
                         manager: managerName,
-                        phone: phone.trim(),
+                        phone: phone,
                         secretPasscode: sessionUser.token,
                         notes: "",
                         hasVoted: false,
@@ -280,7 +296,7 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                 }
             });
             await batch.commit();
-            alert("הקובץ נטען בהצלחה!");
+            alert("הקובץ נטען בהצלחה והנתונים עודכנו!");
         }
     });
 });
