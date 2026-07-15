@@ -82,13 +82,20 @@
         .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #65676b; }
         .modal h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; color: #1c1e21; font-size: 20px; }
         .voter-info-block { background: #f7f8fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
+        
         .modal-btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .modal-btn { flex: 1; min-width: 120px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-call { background-color: #00a400; color: white; }
         .btn-voted { background-color: #1877f2; color: white; }
         .btn-unvoted { background-color: #e4e6eb; color: #4b4f56; }
         .btn-drive { background-color: #2196F3; color: white; }
-        .btn-remind { background-color: #f59f00; color: white; }
+        
+        /* עיצוב כפתורי תזכורת */
+        .btn-remind-15 { background-color: #ff9800; color: white; }
+        .btn-remind-30 { background-color: #f57c00; color: white; }
+        .btn-remind-60 { background-color: #e65100; color: white; }
+        .btn-delete-reminder { background-color: #d32f2f; color: white; }
+        
         .btn-save-all { background-color: #2e7d32; color: white; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-save-all:hover { background-color: #1b5e20; }
         
@@ -262,9 +269,17 @@
             <button class="modal-btn btn-voted" id="modal-btn-toggle-vote">👍 סימון כהצביע</button>
         </div>
 
+        <!-- כפתורי תזכורות מהירים וחדשים -->
+        <div style="font-size: 13px; font-weight: bold; color: #65676b; margin-bottom: 5px;">⏰ קבע תזכורת מהירה:</div>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+            <button class="modal-btn btn-remind-15" id="modal-btn-remind-15">⏱️ 15 דק'</button>
+            <button class="modal-btn btn-remind-30" id="modal-btn-remind-30">⏱️ 30 דק'</button>
+            <button class="modal-btn btn-remind-60" id="modal-btn-remind-60">⏱️ שעה</button>
+        </div>
+
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ הגדר תזכורת לעוד שעה</button>
-            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
+            <button class="modal-btn btn-delete-reminder" id="modal-btn-delete-reminder">🗑️ מחק תזכורת והערות</button>
+            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח להסעות</button>
         </div>
 
         <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
@@ -693,28 +708,49 @@
         await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
-    // כפתור תזכורת - מוסיף הערה זמנית ומחזיק את זמן היעד בזיכרון עד ללחיצה על "שמור"
-    document.getElementById("modal-btn-remind").addEventListener("click", () => {
+    // פונקציית עזר לחישוב זמן עתידי בדקות ועדכון שדה הטקסט של ההערות
+    function applyQuickReminder(minutes) {
         if (!activeVoter) return;
         
         const now = new Date();
-        const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
+        const futureTime = new Date(now.getTime() + (minutes * 60 * 1000));
         const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
         
-        tempReminderTime = futureTime.getTime(); // שומר את ה-Timestamp בזיכרון הזמני
+        tempReminderTime = futureTime.getTime(); // שמירת Timestamp בזיכרון הזמני
 
         const notesInput = document.getElementById("modal-notes-input");
         let currentText = notesInput.value.trim();
+        
+        // הסרת שורות תזכורת קודמות כדי למנוע כפילויות
+        const lines = currentText.split('\n').filter(line => !line.startsWith("⏰ תזכורת:"));
         const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
         
-        if (currentText && !currentText.includes("תזכורת:")) {
-            notesInput.value = currentText + "\n" + reminderText;
-        } else if (!currentText.includes("תזכורת:")) {
+        if (lines.length > 0) {
+            notesInput.value = lines.join('\n') + "\n" + reminderText;
+        } else {
             notesInput.value = reminderText;
         }
         
-        document.getElementById("modal-save-status").style.color = "#f59f00";
-        document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
+        const statusDiv = document.getElementById("modal-save-status");
+        statusDiv.style.color = "#ff9800";
+        statusDiv.textContent = `תזכורת לעוד ${minutes} דק' הוכנה! לחץ על 'שמור שינויים'.`;
+    }
+
+    // קישורי האזנה לכפתורים החדשים
+    document.getElementById("modal-btn-remind-15").addEventListener("click", () => applyQuickReminder(15));
+    document.getElementById("modal-btn-remind-30").addEventListener("click", () => applyQuickReminder(30));
+    document.getElementById("modal-btn-remind-60").addEventListener("click", () => applyQuickReminder(60));
+
+    // כפתור מחיקת תזכורת והערות
+    document.getElementById("modal-btn-delete-reminder").addEventListener("click", () => {
+        if (!activeVoter) return;
+        
+        tempReminderTime = null; // איפוס הזיכרון הזמני
+        document.getElementById("modal-notes-input").value = ""; // מחיקת כל התוכן בהערות
+        
+        const statusDiv = document.getElementById("modal-save-status");
+        statusDiv.style.color = "#f44336";
+        statusDiv.textContent = "התזכורת וההערות אופסו! לחץ על 'שמור שינויים' לאישור סופי.";
     });
 
     // כפתור שמירה ייעודי ויציב לשמירה סופית של כל השינויים של הבוחר
