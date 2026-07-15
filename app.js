@@ -16,6 +16,7 @@ const db = getFirestore(app);
 let sessionUser = null;
 let allVotersGlobal = [];
 let showUnvotedOnly = false;
+let showRemindersOnly = false; // <-- משתנה מצב חדש לסינון תזכורות
 let targetTime = "22:00";
 let countdownInterval = null;
 let activeVoter = null; 
@@ -107,7 +108,9 @@ function startDashboard() {
     onSnapshot(collection(db, "voters"), (snapshot) => {
         const voters = [];
         snapshot.forEach(doc => { voters.push({ id: doc.id, ...doc.data() }); });
+        
         allVotersGlobal = voters;
+        
         if (sessionUser.role === "admin") { updateFilterDropdown(voters); }
         renderDashboard();
 
@@ -160,6 +163,25 @@ document.getElementById("close-time-picker").addEventListener("change", async (e
 document.getElementById("unvoted-toggle").addEventListener("click", function() {
     showUnvotedOnly = !showUnvotedOnly;
     this.classList.toggle("active", showUnvotedOnly);
+    
+    // אם הדלקנו את "טרם הצביעו", נכבה את סינון התזכורות כדי למנוע התנגשויות
+    if (showUnvotedOnly) {
+        showRemindersOnly = false;
+        document.getElementById("reminders-toggle").classList.remove("active");
+    }
+    renderDashboard();
+});
+
+// מאזין לכפתור סינון תזכורות החדש
+document.getElementById("reminders-toggle").addEventListener("click", function() {
+    showRemindersOnly = !showRemindersOnly;
+    this.classList.toggle("active", showRemindersOnly);
+    
+    // אם הדלקנו את סינון התזכורות, נכבה את "טרם הצביעו" הרגיל כדי למנוע התנגשויות
+    if (showRemindersOnly) {
+        showUnvotedOnly = false;
+        document.getElementById("unvoted-toggle").classList.remove("active");
+    }
     renderDashboard();
 });
 
@@ -243,34 +265,30 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                     
                     const keys = Object.keys(row);
                     
-                    // חיפוש עמודת עיר/ישוב/יישוב
                     const cityKey = keys.find(k => {
                         const cleanKey = k.trim();
                         return cleanKey === "עיר" || cleanKey === "ישוב" || cleanKey === "יישוב";
                     });
                     const city = cityKey ? (row[cityKey] || "").trim() : "";
 
-                    // חיפוש עמודת רחוב
                     const streetKey = keys.find(k => k.trim() === "רחוב");
                     const street = streetKey ? (row[streetKey] || "").trim() : "";
 
-                    // חיפוש עמודת מספר בית / כתובת
                     const houseKey = keys.find(k => k.trim() === "מס בית" || k.trim() === "כתובת");
                     const houseNum = houseKey ? (row[houseKey] || "").trim() : "";
 
-                    // חיפוש עמודת טלפון / נייד
                     const phoneKey = keys.find(k => k.trim() === "טלפון" || k.trim() === "נייד");
                     let phone = phoneKey ? (row[phoneKey] || "").trim() : "";
 
-                    // --- תיקון והוספת אפס מוביל למספרי טלפון ---
                     if (phone) {
-                        // אם האקסל השמיט את ה-0 והמספר מתחיל ישירות ב-5 (למשל: 525689467)
+                        // --- שדרוג 2: ניקוי מספרי טלפון מרווחים, מקפים וסוגריים ---
+                        phone = phone.replace(/[\s\-\(\)]/g, ""); // מסיר רווחים, מקפים וסוגריים עגולים
+                        
                         if (phone.startsWith("5") && phone.length === 9) {
                             phone = "0" + phone;
                         }
                     }
 
-                    // בנייה אסתטית של הכתובת ללא פסיקים ורווחים מיותרים
                     let addressParts = [];
                     if (street) addressParts.push(street);
                     
@@ -302,7 +320,7 @@ document.getElementById("csv-file-input").addEventListener("change", function(e)
                 }
             });
             await batch.commit();
-            alert("הקובץ נטען בהצלחה והנתונים עודכנו!");
+            alert("הקובץ נטען בהצלחה, מספרי הטלפון נוקו והנתונים עודכנו!");
         }
     });
 });
@@ -319,7 +337,13 @@ function renderDashboard() {
         return v.manager === sessionUser.name;
     });
 
+    // החלת סינונים
     if (showUnvotedOnly) filteredVoters = filteredVoters.filter(v => !v.hasVoted);
+    
+    // --- שדרוג 1: סינון לפי תזכורות פעילות בלבד ---
+    if (showRemindersOnly) {
+        filteredVoters = filteredVoters.filter(v => v.reminderTime && !v.hasVoted);
+    }
 
     if (searchQuery) {
         filteredVoters = filteredVoters.filter(v => 
@@ -369,7 +393,18 @@ function renderDashboard() {
         return;
     }
 
-    filteredVoters.sort((a, b) => Number(a.masad) - Number(b.masad)).forEach(v => {
+    // מיון חכם: קודם כל אלו שלא הצביעו (בסדר מסד), ואז אלו שהצביעו (בסדר מסד)
+    filteredVoters.sort((a, b) => {
+        const aVoted = a.hasVoted ? 1 : 0;
+        const bVoted = b.hasVoted ? 1 : 0;
+        
+        if (aVoted !== bVoted) {
+            return aVoted - bVoted; 
+        }
+        return Number(a.masad) - Number(b.masad);
+    });
+
+    filteredVoters.forEach(v => {
         const row = document.createElement("tr");
         row.classList.add("voter-row-item");
         if (v.hasVoted) row.classList.add("voted-row");
@@ -429,7 +464,29 @@ document.getElementById("modal-btn-call").addEventListener("click", () => {
 
 document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
     if (!activeVoter) return;
-    await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: !activeVoter.hasVoted });
+    
+    const targetStatus = !activeVoter.hasVoted;
+    const voterId = activeVoter.id;
+
+    const localVoter = allVotersGlobal.find(v => v.id === voterId);
+    if (localVoter) {
+        localVoter.hasVoted = targetStatus;
+    }
+
+    renderDashboard();
+    modal.style.display = "none"; 
+
+    try {
+        await updateDoc(doc(db, "voters", voterId), { hasVoted: targetStatus });
+        activeVoter = null; 
+    } catch (error) {
+        console.error("שגיאה בסנכרון ההצבעה מול השרת, מבצע שחזור...", error);
+        if (localVoter) {
+            localVoter.hasVoted = !targetStatus;
+            renderDashboard();
+        }
+        alert("תקלת תקשורת: הסימון לא נשמר בשרת. אנא נסה שנית.");
+    }
 });
 
 function applyQuickReminder(minutes) {
