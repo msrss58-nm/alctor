@@ -12,7 +12,7 @@
         
         /* מסך נעילה */
         #login-screen { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .login-input { width: 80%; padding: 12px; font-size: 18px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; letter-spacing: 5px; }
+        .login-input { width: 90%; padding: 12px; font-size: 16px; text-align: center; border-radius: 6px; border: 1px solid #ccd0d5; margin-bottom: 15px; box-sizing: border-box; }
         
         #main-dashboard { display: none; }
         
@@ -32,6 +32,7 @@
         .upload-btn { background-color: #1877f2; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .whatsapp-report-btn { background-color: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
+        .manage-users-btn { background-color: #7209b7; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .upload-zone input[type="file"] { display: none; }
         
         .search-filter-zone { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; margin-top: 10px; }
@@ -110,14 +111,15 @@
 </head>
 <body>
 
-<!-- מסך כניסה מאובטח -->
+<!-- מסך כניסה מאובטח ומעודכן -->
 <div id="login-screen">
     <h2>🔒 מערכת חמ"ל סגורה</h2>
-    <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
-    <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
+    <p>אנא הכנס פרטי גישה כדי לצפות בנתונים:</p>
+    <input type="text" id="user-input" class="login-input" placeholder="שם משתמש (ריק למנהל ראשי)">
+    <input type="password" id="pass-input" class="login-input" placeholder="קוד גישה סודי (למשל 1111)" maxlength="10">
     <br>
-    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">התחבר למערכת</button>
-    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
+    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 90%;">התחבר למערכת</button>
+    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ פרטי גישה שגויים!</p>
 </div>
 
 <!-- הדשבורד הראשי -->
@@ -140,7 +142,8 @@
             <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
             <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
         </div>
-        <div class="admin-only" style="margin-top: 10px;">
+        <div class="admin-only" style="margin-top: 10px; display: flex; gap: 10px;">
+            <button class="manage-users-btn" id="manage-users-btn">👥 ניהול משתמשים</button>
             <button class="whatsapp-report-btn" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
         </div>
     </div>
@@ -292,6 +295,46 @@
     </div>
 </div>
 
+<!-- חלון ניהול משתמשים (Modal) - חדש למנהלים בלבד -->
+<div id="users-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close-modal" id="close-users-modal-btn">&times;</span>
+        <h3>👥 ניהול משתמשים וסיסמאות</h3>
+        
+        <div style="background: #f7f8fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="display:block; margin-bottom: 10px;">➕ הוסף משתמש חדש</strong>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                <input type="text" id="new-user-name" placeholder="שם המשתמש/האחראי" style="flex:1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="password" id="new-user-pass" placeholder="קוד כניסה סודי" style="flex:1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                <div>
+                    <label><input type="radio" name="new-user-role" value="user" checked> אחראי שטח (רואה רק את שלו)</label>
+                    <label style="margin-right: 15px;"><input type="radio" name="new-user-role" value="admin"> מנהל (רואה הכל)</label>
+                </div>
+                <button class="modal-btn btn-save-all" id="btn-add-user" style="width: auto; padding: 8px 15px; margin: 0;">הוסף משתמש</button>
+            </div>
+        </div>
+
+        <div style="max-height: 250px; overflow-y: auto;">
+            <strong>רשימת המשתמשים הפעילים:</strong>
+            <table style="width:100%; margin-top:10px;">
+                <thead>
+                    <tr>
+                        <th>שם משתמש</th>
+                        <th>תפקיד</th>
+                        <th>קוד כניסה</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- ייטען דינמית -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -314,7 +357,7 @@
     let targetTime = "22:00";
     let countdownInterval = null;
     let activeVoter = null; 
-    let tempReminderTime = null; // החזקת ערך תזכורת זמני עד לשמירה הסופית
+    let tempReminderTime = null;
 
     let pieChartInstance = null;
     let barChartInstance = null;
@@ -322,40 +365,48 @@
     document.getElementById("login-btn").addEventListener("click", checkLogin);
     document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
 
-    // פונקציית כניסה מאובטח - בדיקה נקודתית ללא חשיפת רשימת המשתמשים בקוד
+    // פונקציית כניסה מאובטחת ומעודכנת
     async function checkLogin() {
+        const username = document.getElementById("user-input").value.trim();
         const code = document.getElementById("pass-input").value.trim();
         if (!code) return;
 
         try {
-            // ניגש ישירות למסמך שה-ID שלו הוא קוד הגישה (users/code)
+            // תאימות כניסה מהירה למנהל הראשי עם הקוד 1111
+            if (code === "1111" && (username === "" || username === "מנהל ראשי")) {
+                sessionUser = { name: "מנהל ראשי", role: "admin", token: "1111" };
+                await setDoc(doc(db, "users", "1111"), {
+                    name: "מנהל ראשי",
+                    role: "admin",
+                    passcode: "1111"
+                });
+                startDashboard();
+                return;
+            }
+
+            // חיפוש ב-Firestore של משתמש עם קוד הגישה הזה
             const userDocRef = doc(db, "users", code);
             const userSnapshot = await getDoc(userDocRef);
 
             if (userSnapshot.exists()) {
                 const data = userSnapshot.data();
+                
+                // אימות כפול של שם המשתמש אם הוזן
+                if (username && data.name !== username) {
+                    document.getElementById("login-error").textContent = "❌ שם משתמש אינו תואם לקוד הגישה!";
+                    document.getElementById("login-error").style.display = "block";
+                    return;
+                }
+
                 sessionUser = {
                     name: data.name,
-                    role: data.role, // 'admin' או 'user'
+                    role: data.role,
                     token: code
                 };
                 startDashboard();
             } else {
-                // מנגנון גיבוי כניסה ראשוני למקרה שאין עדיין אף משתמש ב-Database
-                if (code === "1111") {
-                    sessionUser = { name: "מנהל ראשי", role: "admin", token: "1111" };
-                    
-                    // יוצר את המנהל הראשון ב-DB. ה-Document ID יהיה "1111"
-                    await setDoc(doc(db, "users", "1111"), {
-                        name: "מנהל ראשי",
-                        role: "admin",
-                        passcode: "1111"
-                    });
-                    startDashboard();
-                } else {
-                    document.getElementById("login-error").textContent = "❌ קוד גישה שגוי!";
-                    document.getElementById("login-error").style.display = "block";
-                }
+                document.getElementById("login-error").textContent = "❌ פרטי גישה שגויים!";
+                document.getElementById("login-error").style.display = "block";
             }
         } catch (error) {
             console.error("שגיאה בהתחברות:", error);
@@ -399,11 +450,9 @@
             }
             renderDashboard();
 
-            // עדכון הבוחר הפעיל ברקע אך ללא דריסת שדות הקלט בזמן ההקלדה
             if (activeVoter) {
                 const updated = voters.find(v => v.id === activeVoter.id);
                 if (updated) {
-                    // עדכון הסטטוסים השקטים
                     activeVoter.hasVoted = updated.hasVoted;
                     refreshModalVoteButton();
                 }
@@ -534,19 +583,15 @@
                         const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                         const masad = row["מסד"] || "";
                         
-                        // קורא את הכתובת בצורה גמישה וחכמה במיוחד!
                         let address = "";
-                        
-                        // בודק אם "כתובת" היא עמודה עצמאית שמכילה טקסט ולא רק מספר בית בודד
                         if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
                             address = row["כתובת"].trim();
                         } else {
-                            // אם אין, או שזה רק מספר, מחבר רחוב + מס בית (הקודם או החדש שנקרא "כתובת") + עיר
                             const street = row["רחוב"] || "";
                             const houseNum = row["מס בית"] || row["כתובת"] || "";
                             const city = row["עיר"] || "";
                             address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
-                            if (address === ",") address = ""; // מניעת פסיק ריק אם הכל ריק
+                            if (address === ",") address = "";
                         }
 
                         const phone = row["טלפון"] || row["נייד"] || "";
@@ -572,12 +617,17 @@
     });
 
     function renderDashboard() {
+        // סינון אבטחתי קשיח: אחראי שטח רואה אך ורק את הבוחרים המשויכים אליו
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
         
         let filteredVoters = allVotersGlobal.filter(v => {
-            if (sessionUser.role === "admin" && activeFilter === "all") return true;
-            return v.manager === activeFilter;
+            if (sessionUser.role === "admin") {
+                if (activeFilter === "all") return true;
+                return v.manager === activeFilter;
+            }
+            // אם המשתמש הוא "אחראי", נבדוק התאמה מוחלטת לשם המשתמש שלו
+            return v.manager === sessionUser.name;
         });
 
         if (showUnvotedOnly) filteredVoters = filteredVoters.filter(v => !v.hasVoted);
@@ -635,7 +685,6 @@
             row.classList.add("voter-row-item");
             if (v.hasVoted) row.classList.add("voted-row");
             
-            // צביעה בצהוב יציב על בסיס נתונים שנשמרו ב-Firebase
             if (v.reminderTime && !v.hasVoted) {
                 row.classList.add("reminder-row");
             }
@@ -665,7 +714,7 @@
     
     function openVoterModal(voter) {
         activeVoter = voter;
-        tempReminderTime = voter.reminderTime || null; // החזקת המצב הקיים מ-Firebase
+        tempReminderTime = voter.reminderTime || null;
         
         modal.style.display = "flex";
         
@@ -696,19 +745,16 @@
     document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
     window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
 
-    // כפתור חיוג מהיר
     document.getElementById("modal-btn-call").addEventListener("click", () => {
         if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
     });
 
-    // שינוי סטטוס הצבעה מיידי
     document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
         if (!activeVoter) return;
         const nextStatus = !activeVoter.hasVoted;
         await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
-    // פונקציית עזר לחישוב זמן עתידי בדקות ועדכון שדה הטקסט של ההערות
     function applyQuickReminder(minutes) {
         if (!activeVoter) return;
         
@@ -716,12 +762,11 @@
         const futureTime = new Date(now.getTime() + (minutes * 60 * 1000));
         const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
         
-        tempReminderTime = futureTime.getTime(); // שמירת Timestamp בזיכרון הזמני
+        tempReminderTime = futureTime.getTime();
 
         const notesInput = document.getElementById("modal-notes-input");
         let currentText = notesInput.value.trim();
         
-        // הסרת שורות תזכורת קודמות כדי למנוע כפילויות
         const lines = currentText.split('\n').filter(line => !line.startsWith("⏰ תזכורת:"));
         const reminderText = `⏰ תזכורת: לחזור אליו בשעה ${timeString}`;
         
@@ -736,24 +781,21 @@
         statusDiv.textContent = `תזכורת לעוד ${minutes} דק' הוכנה! לחץ על 'שמור שינויים'.`;
     }
 
-    // קישורי האזנה לכפתורים החדשים
     document.getElementById("modal-btn-remind-15").addEventListener("click", () => applyQuickReminder(15));
     document.getElementById("modal-btn-remind-30").addEventListener("click", () => applyQuickReminder(30));
     document.getElementById("modal-btn-remind-60").addEventListener("click", () => applyQuickReminder(60));
 
-    // כפתור מחיקת תזכורת והערות
     document.getElementById("modal-btn-delete-reminder").addEventListener("click", () => {
         if (!activeVoter) return;
         
-        tempReminderTime = null; // איפוס הזיכרון הזמני
-        document.getElementById("modal-notes-input").value = ""; // מחיקת כל התוכן בהערות
+        tempReminderTime = null;
+        document.getElementById("modal-notes-input").value = "";
         
         const statusDiv = document.getElementById("modal-save-status");
         statusDiv.style.color = "#f44336";
         statusDiv.textContent = "התזכורת וההערות אופסו! לחץ על 'שמור שינויים' לאישור סופי.";
     });
 
-    // כפתור שמירה ייעודי ויציב לשמירה סופית של כל השינויים של הבוחר
     document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
         if (!activeVoter) return;
         
@@ -783,14 +825,12 @@
         }
     });
 
-    // שליחה לאחראי הסעות בוואטסאפ
     document.getElementById("modal-btn-drive").addEventListener("click", () => {
         if (!activeVoter) return;
         const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
     });
 
-    // בדיקת תזכורות שפג תוקפן
     function checkActiveReminders() {
         const currentTime = new Date().getTime();
         allVotersGlobal.forEach(async v => {
@@ -801,7 +841,88 @@
         });
     }
 
-    /* --- סוף מערכת מודאל --- */
+    /* --- מערכת ניהול משתמשים וסיסמאות --- */
+    const usersModal = document.getElementById("users-modal");
+    
+    document.getElementById("manage-users-btn").addEventListener("click", () => {
+        if (sessionUser.role !== "admin") return;
+        usersModal.style.display = "flex";
+        loadUsersTable();
+    });
+
+    document.getElementById("close-users-modal-btn").addEventListener("click", () => { usersModal.style.display = "none"; });
+
+    // העלאת משתמשים מהשרת והצגתם בטבלה
+    async function loadUsersTable() {
+        const tbody = document.getElementById("users-table-body");
+        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>טוען משתמשים...</td></tr>";
+
+        try {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            tbody.innerHTML = "";
+            
+            querySnapshot.forEach((docSnap) => {
+                const user = docSnap.data();
+                const userId = docSnap.id;
+                const roleText = user.role === "admin" ? "👑 מנהל" : "👤 אחראי";
+                
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><strong>${user.name}</strong></td>
+                    <td>${roleText}</td>
+                    <td><code>${userId}</code></td>
+                    <td>
+                        ${userId !== "1111" ? `<button class="modal-btn btn-delete-reminder" style="padding:4px 8px; font-size:11px;" onclick="window.deleteUserFromTable('${userId}')">🗑️ מחק</button>` : '<span style="color:#65676b; font-size:11px;">מוגן</span>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; color:red;'>שגיאה בטעינת משתמשים</td></tr>";
+        }
+    }
+
+    // הוספת משתמש חדש
+    document.getElementById("btn-add-user").addEventListener("click", async () => {
+        const name = document.getElementById("new-user-name").value.trim();
+        const code = document.getElementById("new-user-pass").value.trim();
+        const role = document.querySelector('input[name="new-user-role"]:checked').value;
+
+        if (!name || !code) {
+            alert("חובה למלא גם שם וגם קוד כניסה!");
+            return;
+        }
+
+        try {
+            // ה-ID של המסמך ב-users יהיה קוד הגישה עצמו
+            await setDoc(doc(db, "users", code), {
+                name: name,
+                role: role,
+                passcode: code
+            });
+            
+            alert(`המשתמש ${name} נוסף בהצלחה!`);
+            document.getElementById("new-user-name").value = "";
+            document.getElementById("new-user-pass").value = "";
+            loadUsersTable();
+        } catch (error) {
+            alert("שגיאה ביצירת המשתמש בשרת!");
+        }
+    });
+
+    // הגדרת פונקציית מחיקה גלובלית על החלון
+    window.deleteUserFromTable = async function(userId) {
+        if (!confirm("האם למחוק משתמש זה לצמיתות?")) return;
+        try {
+            await deleteDoc(doc(db, "users", userId));
+            alert("המשתמש נמחק בהצלחה.");
+            loadUsersTable();
+        } catch (error) {
+            alert("שגיאה במחיקת המשתמש!");
+        }
+    };
+
+    /* --- סוף מערכת ניהול משתמשים --- */
 
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
