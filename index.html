@@ -32,7 +32,6 @@
         .upload-btn { background-color: #1877f2; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .delete-all-btn { background-color: #f02849; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .whatsapp-report-btn { background-color: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
-        .manage-users-btn { background-color: #673AB7; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-block; font-size: 14px; }
         .upload-zone input[type="file"] { display: none; }
         
         .search-filter-zone { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; margin-top: 10px; }
@@ -77,7 +76,7 @@
         body.user-view .admin-only { display: none !important; }
         .chart-container { position: relative; height: 220px; width: 100%; margin: 15px auto; }
 
-        /* חלונות מודאל (פופ-אפ) */
+        /* חלון מודאל (פופ-אפ לבוחר) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background-color: #fff; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease-out; position: relative; }
         .close-modal { position: absolute; top: 15px; left: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #65676b; }
@@ -96,14 +95,6 @@
         .modal-label { font-weight: bold; font-size: 13px; color: #65676b; margin-bottom: 5px; display: block; }
         .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccd0d5; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
         .modal-textarea:focus { border-color: #1877f2; outline: none; }
-
-        /* סגנונות ספציפיים למודאל ניהול המשתמשים */
-        .user-form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .user-input { padding: 10px; border-radius: 6px; border: 1px solid #ccd0d5; font-size: 14px; }
-        .user-select { padding: 10px; border-radius: 6px; border: 1px solid #ccd0d5; font-size: 14px; background: white; }
-        .user-table-wrapper { max-height: 200px; overflow-y: auto; border: 1px solid #f0f2f5; border-radius: 8px; margin-top: 15px; }
-        .btn-add-user { background-color: #673AB7; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-delete-user { background-color: #f02849; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
@@ -142,8 +133,7 @@
             <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
             <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
         </div>
-        <div class="admin-only" style="margin-top: 10px; display: flex; gap: 10px;">
-            <button class="manage-users-btn" id="manage-users-btn">👥 ניהול מנהלים ואחראים</button>
+        <div class="admin-only" style="margin-top: 10px;">
             <button class="whatsapp-report-btn" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
         </div>
     </div>
@@ -280,59 +270,16 @@
         <span class="modal-label">✏️ הערות ועדכוני סטטוס:</span>
         <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה..."></textarea>
         
+        <!-- כפתור שמירה ייעודי ויציב למניעת כפילויות ודריסות -->
         <button class="modal-btn btn-save-all" id="modal-btn-save-all">💾 שמור שינויים ותזכורת</button>
-        <div id="modal-save-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
-    </div>
-</div>
-
-<!-- חלון ניהול מנהלים ואחראים (Modal) -->
-<div id="users-modal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <span class="close-modal" id="close-users-modal-btn">&times;</span>
-        <h3>👥 ניהול מנהלים ואחראים</h3>
         
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <div class="user-form-group" style="flex: 1; min-width: 140px;">
-                <label class="modal-label">שם המשתמש:</label>
-                <input type="text" id="new-user-name" class="user-input" placeholder="לדוגמה: אבי כהן">
-            </div>
-            <div class="user-form-group" style="flex: 1; min-width: 140px;">
-                <label class="modal-label">תפקיד במערכת:</label>
-                <select id="new-user-role" class="user-select">
-                    <option value="manager">👤 אחראי שטח (רואה רק את שלו)</option>
-                    <option value="admin">🔑 מנהל חמ"ל (רואה הכל)</option>
-                </select>
-            </div>
-            <div class="user-form-group" style="flex: 1; min-width: 100px;">
-                <label class="modal-label">קוד גישה (סיסמה):</label>
-                <input type="text" id="new-user-passcode" class="user-input" placeholder="4 ספרות" maxlength="6">
-            </div>
-        </div>
-        <button class="btn-add-user" id="btn-add-user" style="width: 100%; padding: 12px; margin-top: 5px;">➕ הוסף משתמש חדש למערכת</button>
-        <div id="user-action-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 8px; height: 15px;"></div>
-
-        <h4 style="margin: 20px 0 10px 0; border-bottom: 1px solid #f0f2f5; padding-bottom: 5px;">👥 משתמשים פעילים במערכת</h4>
-        <div class="user-table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>שם משתמש</th>
-                        <th>תפקיד</th>
-                        <th>קוד גישה</th>
-                        <th>פעולות</th>
-                    </tr>
-                </thead>
-                <tbody id="users-table-body">
-                    <tr><td colspan="4" style="text-align:center;">טוען רשימת משתמשים...</td></tr>
-                </tbody>
-            </table>
-        </div>
+        <div id="modal-save-status" style="font-size: 13px; color: #00a400; text-align: center; font-weight: bold; margin-top: 10px; height: 18px;"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -348,12 +295,11 @@
 
     let sessionUser = null;
     let allVotersGlobal = [];
-    let allUsersGlobal = [];
     let showUnvotedOnly = false;
     let targetTime = "22:00";
     let countdownInterval = null;
     let activeVoter = null; 
-    let tempReminderTime = null;
+    let tempReminderTime = null; // החזקת ערך תזכורת זמני עד לשמירה הסופית
 
     let pieChartInstance = null;
     let barChartInstance = null;
@@ -361,41 +307,38 @@
     document.getElementById("login-btn").addEventListener("click", checkLogin);
     document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
 
-    // פונקציית כניסה ובדיקת הרשאות מול Firestore
+    // פונקציית כניסה מאובטח - בדיקה נקודתית ללא חשיפת רשימת המשתמשים בקוד
     async function checkLogin() {
         const code = document.getElementById("pass-input").value.trim();
         if (!code) return;
 
         try {
-            const usersSnapshot = await getDocs(collection(db, "users"));
-            let userFound = null;
-            
-            usersSnapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.passcode === code) {
-                    userFound = { id: doc.id, ...data };
-                }
-            });
+            // ניגש ישירות למסמך שה-ID שלו הוא קוד הגישה (users/code)
+            const userDocRef = doc(db, "users", code);
+            const userSnapshot = await getDoc(userDocRef);
 
-            if (userFound) {
+            if (userSnapshot.exists()) {
+                const data = userSnapshot.data();
                 sessionUser = {
-                    name: userFound.name,
-                    role: userFound.role, // 'admin' או 'manager'
+                    name: data.name,
+                    role: data.role, // 'admin' או 'user'
                     token: code
                 };
                 startDashboard();
             } else {
-                // מנגנון גיבוי כניסה ראשוני למקרה שאין עדיין משתמשים ב-Database
+                // מנגנון גיבוי כניסה ראשוני למקרה שאין עדיין אף משתמש ב-Database
                 if (code === "1111") {
                     sessionUser = { name: "מנהל ראשי", role: "admin", token: "1111" };
-                    // יוצר את המנהל הראשון ב-DB למניעת נעילה
-                    await setDoc(doc(db, "users", "admin_default"), {
+                    
+                    // יוצר את המנהל הראשון ב-DB. ה-Document ID יהיה "1111"
+                    await setDoc(doc(db, "users", "1111"), {
                         name: "מנהל ראשי",
                         role: "admin",
                         passcode: "1111"
                     });
                     startDashboard();
                 } else {
+                    document.getElementById("login-error").textContent = "❌ קוד גישה שגוי!";
                     document.getElementById("login-error").style.display = "block";
                 }
             }
@@ -419,16 +362,6 @@
             document.getElementById("chart-card-title").textContent = `📊 אחוז ההספק שלך`;
         } else {
             document.getElementById("toggle-settings-btn").style.display = "block";
-            
-            // האזנה קבועה למשתמשים עבור המודאל של המנהל
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                const users = [];
-                snapshot.forEach(doc => {
-                    users.push({ id: doc.id, ...doc.data() });
-                });
-                allUsersGlobal = users;
-                renderUsersTable();
-            });
         }
 
         onSnapshot(doc(db, "settings", "timer"), (docSnap) => {
@@ -451,9 +384,11 @@
             }
             renderDashboard();
 
+            // עדכון הבוחר הפעיל ברקע אך ללא דריסת שדות הקלט בזמן ההקלדה
             if (activeVoter) {
                 const updated = voters.find(v => v.id === activeVoter.id);
                 if (updated) {
+                    // עדכון הסטטוסים השקטים
                     activeVoter.hasVoted = updated.hasVoted;
                     refreshModalVoteButton();
                 }
@@ -462,112 +397,6 @@
 
         setInterval(checkActiveReminders, 30000);
     }
-
-    /* --- חלון ניהול מנהלים ואחראים --- */
-    const usersModal = document.getElementById("users-modal");
-    
-    document.getElementById("manage-users-btn").addEventListener("click", () => {
-        usersModal.style.display = "flex";
-    });
-
-    document.getElementById("close-users-modal-btn").addEventListener("click", () => {
-        usersModal.style.display = "none";
-    });
-
-    // הוספת משתמש חדש
-    document.getElementById("btn-add-user").addEventListener("click", async () => {
-        const nameInput = document.getElementById("new-user-name");
-        const roleInput = document.getElementById("new-user-role");
-        const passcodeInput = document.getElementById("new-user-passcode");
-        const status = document.getElementById("user-action-status");
-
-        const name = nameInput.value.trim();
-        const role = roleInput.value;
-        const passcode = passcodeInput.value.trim();
-
-        if (!name || !passcode) {
-            status.style.color = "red";
-            status.textContent = "❌ יש למלא את כל השדות!";
-            return;
-        }
-
-        if (passcode.length < 4) {
-            status.style.color = "red";
-            status.textContent = "❌ קוד הגישה חייב להכיל לפחות 4 תווים!";
-            return;
-        }
-
-        // בדיקה שקוד הגישה לא תפוס כבר
-        const isPasscodeTaken = allUsersGlobal.some(u => u.passcode === passcode);
-        if (isPasscodeTaken) {
-            status.style.color = "red";
-            status.textContent = "❌ קוד גישה זה כבר בשימוש על ידי משתמש אחר!";
-            return;
-        }
-
-        status.style.color = "#673AB7";
-        status.textContent = "שומר משתמש חדש...";
-
-        try {
-            const userId = "user_" + Date.now();
-            await setDoc(doc(db, "users", userId), {
-                name: name,
-                role: role,
-                passcode: passcode
-            });
-
-            status.style.color = "#00a400";
-            status.textContent = "✅ המשתמש נוסף בהצלחה!";
-            
-            // איפוס שדות
-            nameInput.value = "";
-            passcodeInput.value = "";
-        } catch (error) {
-            console.error(error);
-            status.style.color = "red";
-            status.textContent = "❌ שגיאה בשמירת המשתמש!";
-        }
-    });
-
-    // רינדור טבלת משתמשים מנוהלים
-    function renderUsersTable() {
-        const tbody = document.getElementById("users-table-body");
-        tbody.innerHTML = "";
-
-        if (allUsersGlobal.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">אין משתמשים רשומים במערכת.</td></tr>`;
-            return;
-        }
-
-        allUsersGlobal.forEach(user => {
-            const row = document.createElement("tr");
-            const roleName = user.role === "admin" ? "🔑 מנהל חמ\"ל" : "👤 אחראי שטח";
-            
-            row.innerHTML = `
-                <td><strong>${user.name}</strong></td>
-                <td>${roleName}</td>
-                <td><code>${user.passcode}</code></td>
-                <td><button class="btn-delete-user" data-id="${user.id}">🗑️ מחק</button></td>
-            `;
-
-            // מניעת מחיקת משתמש הגיבוי הנוכחי של עצמו
-            const deleteBtn = row.querySelector(".btn-delete-user");
-            if (user.passcode === sessionUser.token) {
-                deleteBtn.style.display = "none";
-            }
-
-            deleteBtn.addEventListener("click", async (e) => {
-                const userId = e.target.getAttribute("data-id");
-                if (confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${user.name}?`)) {
-                    await deleteDoc(doc(db, "users", userId));
-                }
-            });
-
-            tbody.appendChild(row);
-        });
-    }
-
-    /* --- שאר הלוגיקה של המערכת --- */
 
     document.getElementById("toggle-settings-btn").addEventListener("click", () => {
         const settingsBox = document.getElementById("timer-settings-box");
@@ -690,15 +519,19 @@
                         const managerName = row["אחראי"] ? row["אחראי"].trim() : "מטה מרכזי";
                         const masad = row["מסד"] || "";
                         
+                        // קורא את הכתובת בצורה גמישה וחכמה במיוחד!
                         let address = "";
+                        
+                        // בודק אם "כתובת" היא עמודה עצמאית שמכילה טקסט ולא רק מספר בית בודד
                         if (row["כתובת"] && isNaN(row["כתובת"].trim())) {
                             address = row["כתובת"].trim();
                         } else {
+                            // אם אין, או שזה רק מספר, מחבר רחוב + מס בית (הקודם או החדש שנקרא "כתובת") + עיר
                             const street = row["רחוב"] || "";
                             const houseNum = row["מס בית"] || row["כתובת"] || "";
                             const city = row["עיר"] || "";
                             address = `${street} ${houseNum}, ${city}`.replace(/\s+/g, " ").trim();
-                            if (address === ",") address = "";
+                            if (address === ",") address = ""; // מניעת פסיק ריק אם הכל ריק
                         }
 
                         const phone = row["טלפון"] || row["נייד"] || "";
@@ -724,7 +557,6 @@
     });
 
     function renderDashboard() {
-        // סינון מוחלט: מנהל (admin) רואה הכל או מסנן חופשי. אחראי (manager) נעול רק לשם שלו בלבד.
         const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : sessionUser.name;
         const searchQuery = document.getElementById("search-bar").value.toLowerCase();
         
@@ -788,6 +620,7 @@
             row.classList.add("voter-row-item");
             if (v.hasVoted) row.classList.add("voted-row");
             
+            // צביעה בצהוב יציב על בסיס נתונים שנשמרו ב-Firebase
             if (v.reminderTime && !v.hasVoted) {
                 row.classList.add("reminder-row");
             }
@@ -812,12 +645,12 @@
         });
     }
 
-    /* --- מערכת חלון כרטיס בוחר חכם --- */
+    /* --- מערכת חלון כרטיס בוחר חכם (Modal) --- */
     const modal = document.getElementById("voter-modal");
     
     function openVoterModal(voter) {
         activeVoter = voter;
-        tempReminderTime = voter.reminderTime || null;
+        tempReminderTime = voter.reminderTime || null; // החזקת המצב הקיים מ-Firebase
         
         modal.style.display = "flex";
         
@@ -830,6 +663,7 @@
         notesInput.value = voter.notes || '';
         
         document.getElementById("modal-save-status").textContent = "";
+
         refreshModalVoteButton();
     }
 
@@ -845,21 +679,21 @@
     }
 
     document.getElementById("close-modal-btn").addEventListener("click", () => { modal.style.display = "none"; activeVoter = null; });
-    window.addEventListener("click", (e) => { 
-        if (e.target === modal) { modal.style.display = "none"; activeVoter = null; }
-        if (e.target === usersModal) { usersModal.style.display = "none"; }
-    });
+    window.addEventListener("click", (e) => { if (e.target === modal) { modal.style.display = "none"; activeVoter = null; } });
 
+    // כפתור חיוג מהיר
     document.getElementById("modal-btn-call").addEventListener("click", () => {
         if (activeVoter && activeVoter.phone) window.location.href = `tel:${activeVoter.phone}`;
     });
 
+    // שינוי סטטוס הצבעה מיידי
     document.getElementById("modal-btn-toggle-vote").addEventListener("click", async () => {
         if (!activeVoter) return;
         const nextStatus = !activeVoter.hasVoted;
         await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: nextStatus });
     });
 
+    // כפתור תזכורת - מוסיף הערה זמנית ומחזיק את זמן היעד בזיכרון עד ללחיצה על "שמור"
     document.getElementById("modal-btn-remind").addEventListener("click", () => {
         if (!activeVoter) return;
         
@@ -867,7 +701,7 @@
         const futureTime = new Date(now.getTime() + (60 * 60 * 1000));
         const timeString = String(futureTime.getHours()).padStart(2, '0') + ":" + String(futureTime.getMinutes()).padStart(2, '0');
         
-        tempReminderTime = futureTime.getTime();
+        tempReminderTime = futureTime.getTime(); // שומר את ה-Timestamp בזיכרון הזמני
 
         const notesInput = document.getElementById("modal-notes-input");
         let currentText = notesInput.value.trim();
@@ -883,6 +717,7 @@
         document.getElementById("modal-save-status").textContent = "תזכורת הוכנה! לחץ על 'שמור שינויים' כעת.";
     });
 
+    // כפתור שמירה ייעודי ויציב לשמירה סופית של כל השינויים של הבוחר
     document.getElementById("modal-btn-save-all").addEventListener("click", async () => {
         if (!activeVoter) return;
         
@@ -912,12 +747,14 @@
         }
     });
 
+    // שליחה לאחראי הסעות בוואטסאפ
     document.getElementById("modal-btn-drive").addEventListener("click", () => {
         if (!activeVoter) return;
         const textMessage = `🚗 *בקשת הסעה חדשה לבוחר* 🚗\n\n👤 *שם הבוחר:* ${activeVoter.name}\n📍 *כתובת איסוף:* ${activeVoter.address || 'לא צוינה כתובת'}\n📞 *טלפון ליצירת קשר:* ${activeVoter.phone || '-'}\n🆔 *מספר מסד:* ${activeVoter.masad || '-'}\n\nנא לתאם איתו בדחיפות ולעדכן את החמ"ל! 🚀`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textMessage)}`, '_blank');
     });
 
+    // בדיקת תזכורות שפג תוקפן
     function checkActiveReminders() {
         const currentTime = new Date().getTime();
         allVotersGlobal.forEach(async v => {
@@ -928,7 +765,8 @@
         });
     }
 
-    /* --- מערכת גרפים --- */
+    /* --- סוף מערכת מודאל --- */
+
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
         if (pieChartInstance) pieChartInstance.destroy();
