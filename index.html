@@ -109,6 +109,10 @@
         .modal-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccd0d5; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
         .modal-textarea:focus { border-color: #1877f2; outline: none; }
 
+        /* עיצוב כפתור מחיקה מהיר למשתמשים */
+        .delete-user-btn { background-color: #f02849; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
+        .delete-user-btn:hover { background-color: #c01e38; }
+
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -338,7 +342,7 @@
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
-                    <!-- ייטען דינמית -->
+                    <!-- ייטען דינמית מהשרת -->
                 </tbody>
             </table>
         </div>
@@ -862,7 +866,7 @@
         });
     }
 
-    /* --- מערכת ניהול משתמשים וסיסמאות --- */
+    /* --- מערכת ניהול משתמשים וסיסמאות מתוקנת גלובלית --- */
     const usersModal = document.getElementById("users-modal");
     
     document.getElementById("manage-users-btn").addEventListener("click", () => {
@@ -892,13 +896,22 @@
                     <td>${roleText}</td>
                     <td><code>${userId}</code></td>
                     <td>
-                        ${userId !== "585885#" ? `<button class="modal-btn btn-delete-reminder" style="padding:4px 8px; font-size:11px;" onclick="window.deleteUserFromTable('${userId}')">🗑️ מחק</button>` : '<span style="color:#65676b; font-size:11px;">מוגן</span>'}
+                        ${userId !== "585885#" ? `<button class="delete-user-btn" data-id="${userId}">🗑️ מחק משתמש</button>` : '<span style="color:#65676b; font-size:11px;">מוגן</span>'}
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+
+            // הצמדת אירוע המחיקה לכל כפתור בצורה בטוחה ב-JavaScript
+            document.querySelectorAll(".delete-user-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    const idToDelete = this.getAttribute("data-id");
+                    deleteUserFromTable(idToDelete);
+                });
+            });
+
         } catch (error) {
-            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; color:red;'>שגיאה בטעינת משתמשים</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; color:red; font-weight:bold;'>שגיאה בטעינת משתמשים (בדקו Rules ב-Firebase)</td></tr>";
         }
     }
 
@@ -924,20 +937,21 @@
             document.getElementById("new-user-pass").value = "";
             loadUsersTable();
         } catch (error) {
-            alert("שגיאה ביצירת המשתמש בשרת!");
+            alert("שגיאה ביצירת המשתמש בשרת! ודאו שהקוד אינו בשימוש.");
         }
     });
 
-    window.deleteUserFromTable = async function(userId) {
+    // פונקציית מחיקה רשמית מחוץ לטווח הגלובלי המוגבל
+    async function deleteUserFromTable(userId) {
         if (!confirm("האם למחוק משתמש זה לצמיתות?")) return;
         try {
             await deleteDoc(doc(db, "users", userId));
             alert("המשתמש נמחק בהצלחה.");
             loadUsersTable();
         } catch (error) {
-            alert("שגיאה במחיקת המשתמש!");
+            alert("שגיאה במחיקת המשתמש! ייתכן ואין הרשאות מתאימות בשרת.");
         }
-    };
+    }
 
     function renderCharts(voted, left) {
         const ctx = document.getElementById('votingPieChart').getContext('2d');
