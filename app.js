@@ -298,7 +298,9 @@ function exportFilteredVotersToCsv() {
     const csvLines = [header.join(",")];
     rows.forEach(row => csvLines.push(row.map(escapeCsvValue).join(",")));
 
-    const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    // הוספת ה-BOM (תו מיוחד לעברית תקינה באקסל ללא ג'יבריש)
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
