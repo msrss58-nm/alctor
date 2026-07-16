@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+.import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // קונפיגורציית ה-Firebase
@@ -247,7 +247,11 @@ function getVoterAddressParts(voter) {
 function escapeCsvValue(value) {
     if (value === null || value === undefined) return "";
     const stringValue = String(value).replace(/"/g, '""');
-    return `"${stringValue}"`;
+    // אם הערך מכיל פסיק או ירידת שורה, אנו עוטפים במרכאות כפולות
+    if (stringValue.includes(",") || stringValue.includes("\n") || stringValue.includes("\r")) {
+        return `"${stringValue}"`;
+    }
+    return stringValue;
 }
 
 function exportFilteredVotersToCsv() {
@@ -295,12 +299,25 @@ function exportFilteredVotersToCsv() {
         });
 
     const header = ["מסד", "שם מלא", "רחוב", "מס בית", "עיר", "כתובת מלאה", "טלפון", "אחראי", "הערות", "סטטוס", "תזכורת"];
+    
+    // שימוש בפסיק כמפריד תקני לפורמט CSV
     const csvLines = [header.join(",")];
     rows.forEach(row => csvLines.push(row.map(escapeCsvValue).join(",")));
+    
+    const csvContent = csvLines.join("\n");
 
-    // הוספת ה-BOM (תו מיוחד לעברית תקינה באקסל ללא ג'יבריש)
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    // תיקון קריטי: המרת הטקסט למערך ביטים של UTF-8 אמיתי כולל ה-BOM כחלק מה-Uint8Array
+    const encoder = new TextEncoder();
+    const bomArray = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
+    const csvArray = encoder.encode(csvContent);
+    
+    // מיזוג ה-BOM והקוד הבינארי ביחד
+    const mergedArray = new Uint8Array(bomArray.length + csvArray.length);
+    mergedArray.set(bomArray, 0);
+    mergedArray.set(csvArray, bomArray.length);
+
+    // יצירת ה-Blob עם הקידוד המפורש והמערך הבינארי השלם
+    const blob = new Blob([mergedArray], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
