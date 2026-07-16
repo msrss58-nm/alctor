@@ -2,10 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת חמ"ל בחירות</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #f0f2f5; }
         #main-dashboard { display: none; }
@@ -14,7 +11,6 @@
     </style>
 </head>
 <body>
-
     <div id="login-screen">
         <h2>מערכת חמ"ל סגורה 🔒</h2>
         <input type="password" id="pass-input" placeholder="הכנס קוד גישה">
@@ -23,12 +19,11 @@
     </div>
 
     <div id="main-dashboard">
-        <h2 id="main-title">שלום</h2>
+        <h2>שלום מנהל</h2>
         <div id="countdown-display"></div>
-        <table border="1">
-            <thead>
-                <tr><th>מסד</th><th>שם</th><th>סטטוס</th></tr>
-            </thead>
+        <button id="export-csv-btn">📥 ייצוא דוח מסודר ל-CSV</button>
+        <table border="1" style="margin: 20px auto; width: 80%;">
+            <thead><tr><th>מסד</th><th>שם</th><th>סטטוס</th></tr></thead>
             <tbody id="voters-table-body"></tbody>
         </table>
     </div>
@@ -40,7 +35,6 @@
             <button id="close-modal-btn">סגור</button>
         </div>
     </div>
-
     <script type="module" src="app.js"></script>
 </body>
 </html>
