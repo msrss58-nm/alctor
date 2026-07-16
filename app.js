@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// קונפיגורציית ה-Firebase המקורית והנכונה שלך
 const firebaseConfig = {
     apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
     authDomain: "elections-db1e5.firebaseapp.com",
@@ -25,7 +24,6 @@ let selectedVoterIds = [];
 let pieChartInstance = null;
 let barChartInstance = null;
 
-// מאזיני כניסה
 document.getElementById("login-btn").addEventListener("click", checkLogin);
 document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === 'Enter') checkLogin(); });
 
@@ -244,7 +242,6 @@ function getVoterAddressParts(voter) {
     };
 }
 
-// פונקציה לייצוא CSV מותאמת באופן מלא לאקסל בעברית (עם מפריד נקודה-פסיק ו-BOM תקין)
 function exportFilteredVotersToCsv() {
     const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : null;
     const searchQuery = document.getElementById("search-bar").value.toLowerCase();
@@ -300,7 +297,6 @@ function exportFilteredVotersToCsv() {
 
     const header = ["מסד", "שם מלא", "רחוב", "מס בית", "עיר", "כתובת מלאה", "טלפון", "אחראי", "הערות", "סטטוס", "תזכורת"];
     
-    // שימוש בנקודה-פסיק (;) - פותר את בעיית הדחיסה לעמודה אחת באקסל בעברית
     const csvLines = [header.join(";")];
     rows.forEach(row => csvLines.push(row.map(cleanValue).join(";")));
     
@@ -308,7 +304,7 @@ function exportFilteredVotersToCsv() {
 
     const encoder = new TextEncoder();
     const csvBytes = encoder.encode(csvContent);
-    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
     
     const blobContent = new Uint8Array(bom.length + csvBytes.length);
     blobContent.set(bom, 0);
