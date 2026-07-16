@@ -1,0 +1,518 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 15px;
+    color: #333;
+}
+
+.dashboard-grid {
+    display: flex;
+    gap: 20px;
+    max-width: 1400px;
+    margin: auto;
+    flex-wrap: wrap;
+}
+
+.main-panel {
+    flex: 3;
+    min-width: 300px;
+}
+
+.side-panel {
+    flex: 1.2;
+    min-width: 300px;
+}
+
+/* מסך נעילה */
+#login-screen {
+    max-width: 400px;
+    margin: 100px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.login-input {
+    width: 80%;
+    padding: 12px;
+    font-size: 18px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid #ccd0d5;
+    margin-bottom: 15px;
+    letter-spacing: 5px;
+}
+
+#main-dashboard {
+    display: none;
+}
+
+/* אזור שעון ספירה לאחור מרכזי ובולט */
+.countdown-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #1877f2, #1565c0);
+    color: white;
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    margin: 0 auto 20px auto;
+    max-width: 1360px;
+    box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2);
+}
+
+.countdown-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.countdown-clock {
+    font-size: 42px;
+    font-weight: 900;
+    font-family: monospace;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.settings-toggle-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+    display: none;
+}
+
+.settings-toggle-btn:hover {
+    background: rgba(255,255,255,0.35);
+}
+
+.countdown-settings {
+    display: none;
+    margin-top: 15px;
+    background: rgba(255,255,255,0.15);
+    padding: 8px 15px;
+    border-radius: 8px;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.countdown-settings input[type="time"] {
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* פאנל בקרה מהיר */
+.control-panel {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.upload-zone {
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.upload-btn {
+    background-color: #1877f2;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.delete-all-btn {
+    background-color: #f02849;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.whatsapp-report-btn {
+    background-color: #25D366;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.upload-zone input[type="file"] {
+    display: none;
+}
+
+.search-filter-zone {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.search-input {
+    flex: 2;
+    padding: 10px 15px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccd0d5;
+    box-sizing: border-box;
+}
+
+.toggle-filter-btn {
+    flex: 1;
+    min-width: 160px;
+    background-color: #f5f6f7;
+    color: #4b4f56;
+    border: 1px solid #ccd0d5;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.toggle-filter-btn.active {
+    background-color: #e7f3ff;
+    color: #1877f2;
+    border-color: #1877f2;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccd0d5;
+    min-width: 180px;
+    background-color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* מד התקדמות */
+.progress-container {
+    background-color: #e4e6eb;
+    border-radius: 10px;
+    height: 18px;
+    width: 100%;
+    margin: 15px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #00a400, #4db8ff);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease-in-out;
+}
+
+.progress-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 0;
+    left: 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    line-height: 18px;
+}
+
+.stats-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.stat-card h3 {
+    margin: 0;
+    color: #65676b;
+    font-size: 13px;
+}
+
+.stat-card .number {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 8px 0 0 0;
+    color: #1877f2;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+    color: #1c1e21;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: right;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 13px;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: #65676b;
+    font-weight: 600;
+}
+
+/* שורות בטבלה */
+tr.voter-row-item {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+tr.voter-row-item:hover {
+    background-color: #f0f2f5;
+}
+
+tr.voted-row {
+    color: #8d949e;
+    text-decoration: line-through;
+    background-color: #f9fafb;
+}
+
+tr.reminder-row {
+    background-color: #fff9db !important;
+    animation: pulse-yellow 2s infinite alternate;
+}
+
+@keyframes pulse-yellow {
+    from { background-color: #fff9db; }
+    to { background-color: #fff3bf; }
+}
+
+.voted-badge {
+    background-color: #e7f3ff;
+    color: #1877f2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.not-voted-badge {
+    background-color: #f5f6f7;
+    color: #65676b;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.reminder-badge {
+    background-color: #fff3bf;
+    color: #f59f00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.admin-only {
+    display: block;
+}
+
+body.user-view .admin-only {
+    display: none !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 220px;
+    width: 100%;
+    margin: 15px auto;
+}
+
+/* חלון מודאל (פופ-אפ לבוחר) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    animation: fadeIn 0.2s ease-out;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #65676b;
+}
+
+.modal h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+    color: #1c1e21;
+    font-size: 20px;
+}
+
+.voter-info-block {
+    background: #f7f8fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.modal-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-call {
+    background-color: #00a400;
+    color: white;
+}
+
+.btn-voted {
+    background-color: #1877f2;
+    color: white;
+}
+
+.btn-unvoted {
+    background-color: #e4e6eb;
+    color: #4b4f56;
+}
+
+.btn-drive {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-remind {
+    background-color: #f59f00;
+    color: white;
+}
+
+.modal-label {
+    font-weight: bold;
+    font-size: 13px;
+    color: #65676b;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.modal-textarea {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    border: 1px solid #ccd0d5;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: none;
+    margin-bottom: 15px;
+}
+
+.modal-textarea:focus {
+    border-color: #1877f2;
+    outline: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
