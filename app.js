@@ -1,4 +1,4 @@
-.import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // קונפיגורציית ה-Firebase
@@ -244,16 +244,7 @@ function getVoterAddressParts(voter) {
     };
 }
 
-function escapeCsvValue(value) {
-    if (value === null || value === undefined) return "";
-    const stringValue = String(value).replace(/"/g, '""');
-    // אם הערך מכיל פסיק או ירידת שורה, אנו עוטפים במרכאות כפולות
-    if (stringValue.includes(",") || stringValue.includes("\n") || stringValue.includes("\r")) {
-        return `"${stringValue}"`;
-    }
-    return stringValue;
-}
-
+// פונקציה לייצוא CSV מותאמת באופן מלא לאקסל בעברית (עם מפריד נקודה-פסיק ו-BOM תקין)
 function exportFilteredVotersToCsv() {
     const activeFilter = sessionUser.role === "admin" ? document.getElementById("manager-filter").value : null;
     const searchQuery = document.getElementById("search-bar").value.toLowerCase();
@@ -279,6 +270,15 @@ function exportFilteredVotersToCsv() {
         );
     }
 
+    const cleanValue = (val) => {
+        if (val === null || val === undefined) return "";
+        let str = String(val).replace(/"/g, '""');
+        if (str.includes(";") || str.includes("\n") || str.includes("\r")) {
+            return `"${str}"`;
+        }
+        return str;
+    };
+
     const rows = filteredVoters
         .sort((a, b) => Number(a.masad) - Number(b.masad))
         .map(v => {
@@ -300,24 +300,21 @@ function exportFilteredVotersToCsv() {
 
     const header = ["מסד", "שם מלא", "רחוב", "מס בית", "עיר", "כתובת מלאה", "טלפון", "אחראי", "הערות", "סטטוס", "תזכורת"];
     
-    // שימוש בפסיק כמפריד תקני לפורמט CSV
-    const csvLines = [header.join(",")];
-    rows.forEach(row => csvLines.push(row.map(escapeCsvValue).join(",")));
+    // שימוש בנקודה-פסיק (;) - פותר את בעיית הדחיסה לעמודה אחת באקסל בעברית
+    const csvLines = [header.join(";")];
+    rows.forEach(row => csvLines.push(row.map(cleanValue).join(";")));
     
-    const csvContent = csvLines.join("\n");
+    const csvContent = csvLines.join("\r\n");
 
-    // תיקון קריטי: המרת הטקסט למערך ביטים של UTF-8 אמיתי כולל ה-BOM כחלק מה-Uint8Array
     const encoder = new TextEncoder();
-    const bomArray = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
-    const csvArray = encoder.encode(csvContent);
+    const csvBytes = encoder.encode(csvContent);
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
     
-    // מיזוג ה-BOM והקוד הבינארי ביחד
-    const mergedArray = new Uint8Array(bomArray.length + csvArray.length);
-    mergedArray.set(bomArray, 0);
-    mergedArray.set(csvArray, bomArray.length);
+    const blobContent = new Uint8Array(bom.length + csvBytes.length);
+    blobContent.set(bom, 0);
+    blobContent.set(csvBytes, bom.length);
 
-    // יצירת ה-Blob עם הקידוד המפורש והמערך הבינארי השלם
-    const blob = new Blob([mergedArray], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([blobContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
