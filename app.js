@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, doc, onSnapshot, writeBatch, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// קונפיגורציית ה-Firebase
+// קונפיגורציית ה-Firebase המקורית והנכונה שלך
 const firebaseConfig = {
     apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
     authDomain: "elections-db1e5.firebaseapp.com",
