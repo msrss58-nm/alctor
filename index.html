@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חמ"ל בחירות מתקדם ומאובטח</title>
+    <!-- קישור לקובץ העיצוב החיצוני -->
+    <link rel="stylesheet" href="style.css">
+    <!-- ספריות חיצוניות -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- מסך כניסה מאובטח -->
+<div id="login-screen">
+    <h2>🔒 מערכת חמ"ל סגורה</h2>
+    <p>אנא הכנס קוד גישה סודי כדי לצפות בנתונים:</p>
+    <input type="password" id="pass-input" class="login-input" placeholder="••••" maxlength="6">
+    <br>
+    <button class="btn" id="login-btn" style="padding: 12px 30px; font-size: 16px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">התחבר למערכת</button>
+    <p id="login-error" style="color: red; font-weight: bold; margin-top: 15px; display: none;">❌ קוד גישה שגוי!</p>
+</div>
+
+<!-- הדשבורד הראשי -->
+<div id="main-dashboard">
+    
+    <!-- שעון ספירה לאחור מרכזי ובולט -->
+    <div class="countdown-wrapper">
+        <button id="toggle-settings-btn" class="settings-toggle-btn admin-only" title="הגדרת שעת נעילה">⚙️</button>
+        <div class="countdown-title">⏱️ הזמן הנותר לסגירת הקלפיות</div>
+        <div class="countdown-clock" id="countdown-display">00:00:00</div>
+        
+        <div class="countdown-settings admin-only" id="timer-settings-box">
+            <label for="close-time-picker">🕒 <strong>שעת נעילה חדשה:</strong></label>
+            <input type="time" id="close-time-picker" value="22:00">
+        </div>
+    </div>
+
+    <div style="max-width: 1400px; margin: auto; margin-bottom: 20px; text-align: right; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <h1 style="margin: 0; color: #1c1e21;" id="main-title">📊 חמ"ל בחירות - מערכת שליטה</h1>
+            <p style="margin: 5px 0 0 0; color: #65676b;" id="sub-title">ניהול, סינון, וחיוג ישיר לבוחרים בלחיצת כפתור</p>
+        </div>
+        <div class="admin-only" style="margin-top: 10px;">
+            <button class="whatsapp-report-btn" id="whatsapp-report-btn">📱 שלח דוח חמ"ל בוואטסאפ</button>
+        </div>
+    </div>
+
+    <div style="max-width: 1400px; margin: auto;" id="control-panel-container">
+        <div class="control-panel">
+            <div class="upload-zone">
+                <div class="admin-only" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <label class="upload-btn">
+                        📁 טען קובץ בוחרים (CSV)
+                        <input type="file" id="csv-file-input" accept=".csv">
+                    </label>
+                    <button class="delete-all-btn" id="delete-all-btn">🗑️ מחק פנקס בוחרים</button>
+                </div>
+                <button class="upload-btn" id="export-csv-btn" style="background-color: #00a400;">⬇️ ייצא CSV</button>
+                <span id="upload-status" style="font-weight: bold; color: #00a400;"></span>
+            </div>
+            
+            <div class="search-filter-zone">
+                <input type="text" id="search-bar" class="search-input" placeholder="🔍 חפש לפי שם, כתובת, מסד או טלפון...">
+                <button id="unvoted-toggle" class="toggle-filter-btn">📞 הצג רק מי שטרם הצביע</button>
+                
+                <div class="admin-only" id="filter-wrapper">
+                    <select id="manager-filter" class="filter-select">
+                        <option value="all">🌍 כל האחראים</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="main-panel">
+            
+            <!-- פס התקדמות ויזואלי -->
+            <div class="card" style="padding: 15px 20px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
+                    <span>📈 קצב התקדמות ההצבעות בחמ"ל</span>
+                    <span id="progress-percentage-label">0%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="voters-progress-bar"></div>
+                    <div class="progress-text" id="progress-bar-text">0 / 0 הצביעו</div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>סה"כ בוחרים</h3>
+                    <div class="number" id="total-voters">0</div>
+                </div>
+                <div class="stat-card highlight">
+                    <h3>סה"כ הצביעו</h3>
+                    <div class="number" id="total-voted">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>אחוז הצבעה</h3>
+                    <div class="number" id="voting-percentage">0%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 id="table-title">👥 פנקס בוחרים פעיל</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>מסד</th>
+                                <th>שם מלא</th>
+                                <th>רחוב</th>
+                                <th>מס בית</th>
+                                <th>עיר</th>
+                                <th>טלפון</th>
+                                <th class="admin-only">אחראי</th>
+                                <th>הערות</th>
+                                <th>סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody id="voters-table-body">
+                            <tr><td colspan="7" style="text-align:center;">טוען נתונים...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="card">
+                <h2 id="chart-card-title">📊 יחס הצבעה</h2>
+                <div class="chart-container">
+                    <canvas id="votingPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card admin-only" id="side-panel-container">
+                <h2>👔 סיכום הספקי אחראים</h2>
+                <div class="chart-container" style="height: 200px; margin-bottom: 15px;">
+                    <canvas id="managersBarChart"></canvas>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>אחראי</th>
+                            <th>בוחרים</th>
+                            <th>הצביעו</th>
+                        </tr>
+                    </thead>
+                    <tbody id="managers-table-body">
+                        <tr><td colspan="3" style="text-align:center;">אין נתוני אחראים.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- מודל ניהול מנהלים ואחראים (רק ל-Admin) -->
+<div id="users-management-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px;">
+            <h2 style="margin: 0; color: #1c1e21;">👨‍💼 ניהול מנהלים ואחראים</h2>
+            <span class="close-modal" id="close-users-modal">✕</span>
+        </div>
+
+        <h3 style="color: #1877f2; margin-top: 0; margin-bottom: 15px;">➕ הוסף מנהל או אחראי</h3>
+        
+        <div style="background: #f7f8fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 8px;">שם:</label>
+            <input type="text" id="new-manager-name" placeholder="שם מלא" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 15px;">
+            
+            <label style="display: block; font-weight: bold; margin-bottom: 8px;">סיסמה (ידנית):</label>
+            <input type="text" id="new-manager-password" placeholder="הכנס סיסמה" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 15px;">
+            
+            <label style="display: block; font-weight: bold; margin-bottom: 8px;">תפקיד:</label>
+            <select id="new-manager-role" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 15px;">
+                <option value="admin">🔑 מנהל (רואה הכל)</option>
+                <option value="user">👤 אחראי (רואה רק את הבוחרים שלו)</option>
+            </select>
+
+            <label style="display: block; font-weight: bold; margin-bottom: 8px; display: none;" id="voters-label">בחר בוחרים למשימה (הקלק לבחירה):</label>
+            <div id="voters-selector" style="display: none; background: white; border: 1px solid #ccd0d5; border-radius: 6px; max-height: 150px; overflow-y: auto; margin-bottom: 15px; padding: 8px;">
+                <!-- יתמלא דינמית -->
+            </div>
+
+            <button id="save-manager-btn" style="width: 100%; padding: 12px; background: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;">💾 שמור</button>
+        </div>
+
+        <h3 style="color: #1877f2; margin-bottom: 15px;">📋 מנהלים ואחראים קיימים</h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #ccd0d5;">
+                    <th style="padding: 12px; text-align: right; color: #65676b; font-weight: 600;">שם</th>
+                    <th style="padding: 12px; text-align: right; color: #65676b; font-weight: 600;">סיסמה</th>
+                    <th style="padding: 12px; text-align: right; color: #65676b; font-weight: 600;">תפקיד</th>
+                    <th style="padding: 12px; text-align: right; color: #65676b; font-weight: 600;">בוחרים</th>
+                    <th style="padding: 12px; text-align: right; color: #65676b; font-weight: 600;">פעולה</th>
+                </tr>
+            </thead>
+            <tbody id="managers-list-body">
+                <!-- יתמלא דינמית -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- חלון כרטיס בוחר חכם (Modal) -->
+<div id="voter-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="close-modal-btn">&times;</span>
+        <h3 id="modal-voter-name">שם הבוחר</h3>
+        
+        <div class="voter-info-block">
+            📍 <strong>כתובת:</strong> <span id="modal-voter-address">-</span><br>
+            🆔 <strong>מספר מסד:</strong> <span id="modal-voter-masad">-</span><br>
+            📞 <strong>טלפון:</strong> <span id="modal-voter-phone">-</span><br>
+            👤 <strong>אחראי:</strong> <span id="modal-voter-manager">-</span>
+        </div>
+
+        <div class="modal-btn-group">
+            <button class="modal-btn btn-call" id="modal-btn-call">📞 חיוג מהיר</button>
+            <button class="modal-btn btn-voted" id="modal-btn-toggle-vote">👍 סימון כהצביע</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="modal-btn btn-remind" id="modal-btn-remind">⏰ תזכורת (חזור אליו)</button>
+            <button class="modal-btn" id="modal-btn-delete-reminder" style="background-color: #f02849; color: white; flex: 1;">🗑️ מחק תזכורת</button>
+            <button class="modal-btn btn-drive" id="modal-btn-drive">🚗 שלח לאחראי הסעות</button>
+        </div>
+
+        <span class="modal-label">✏️ הערות ועדכוני סטטוס (נשמר אוטומטית):</span>
+        <textarea class="modal-textarea" id="modal-notes-input" placeholder="לדוגמה: הבטיח לצאת ב-18:00, לא עונה, צריך לברר לגבי המשפחה..."></textarea>
+        
+        <div id="modal-save-status" style="font-size: 12px; color: #00a400; text-align: left; font-weight: bold; margin-top: -10px; height: 15px;"></div>
+    </div>
+</div>
+
+<!-- קישור לקוד הלוגיקה החיצוני -->
+<script type="module" src="app.js"></script>
+</body>
+</html>
