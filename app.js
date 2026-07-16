@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBGnj7We6qvsY0pffKRhAMIHWW8lZu7Usc",
@@ -16,14 +16,41 @@ const db = getFirestore(app);
 let allVotersGlobal = [];
 let activeVoter = null;
 
-document.getElementById("login-btn").addEventListener("click", () => {
-    if (document.getElementById("pass-input").value === "1111") {
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("main-dashboard").style.display = "block";
-    } else {
+document.getElementById("login-btn").addEventListener("click", checkLogin);
+
+async function checkLogin() {
+    const code = document.getElementById("pass-input").value.trim();
+    
+    // בדיקת מנהל על (1111)
+    if (code === "1111") {
+        showDashboard();
+        return;
+    }
+
+    // בדיקת מנהל במסד הנתונים
+    try {
+        const querySnapshot = await getDocs(collection(db, "managers"));
+        let found = false;
+        querySnapshot.forEach((doc) => {
+            if (doc.data().password === code && !doc.data().deleted) {
+                found = true;
+            }
+        });
+
+        if (found) {
+            showDashboard();
+        } else {
+            document.getElementById("login-error").style.display = "block";
+        }
+    } catch (e) {
         document.getElementById("login-error").style.display = "block";
     }
-});
+}
+
+function showDashboard() {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("main-dashboard").style.display = "block";
+}
 
 onSnapshot(collection(db, "voters"), (snapshot) => {
     allVotersGlobal = [];
@@ -49,6 +76,7 @@ function openVoterModal(voter) {
 }
 
 document.getElementById("modal-btn-toggle-vote").onclick = async () => {
+    if (!activeVoter) return;
     await updateDoc(doc(db, "voters", activeVoter.id), { hasVoted: !activeVoter.hasVoted });
     document.getElementById("voter-modal").style.display = "none";
 };
@@ -57,8 +85,12 @@ document.getElementById("close-modal-btn").onclick = () => document.getElementBy
 
 document.getElementById("export-csv-btn").onclick = () => {
     const header = ["מסד", "שם מלא", "סטטוס"];
-    const rows = allVotersGlobal.map(v => [v.masad || "", v.name || "", v.hasVoted ? "הצביע" : "טרם הצביע"]);
-    const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
+    const csvRows = allVotersGlobal.map(v => [
+        v.masad || "",
+        v.name || "",
+        v.hasVoted ? "הצביע" : "טרם הצביע"
+    ]);
+    const csvContent = [header, ...csvRows].map(row => row.join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
